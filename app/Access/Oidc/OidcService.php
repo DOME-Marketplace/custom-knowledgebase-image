@@ -14,7 +14,7 @@ use BookStack\Theming\ThemeEvents;
 use BookStack\Uploads\UserAvatars;
 use BookStack\Users\Models\User;
 use Illuminate\Support\Facades\Cache;
-use League\OAuth2\Client\OptionProvider\HttpBasicAuthOptionProvider;
+use BookStack\Access\Oidc\OidcPublicClientOptionProvider;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 
 /**
@@ -135,7 +135,7 @@ class OidcService
             'redirectUri' => url('/oidc/callback'),
         ], [
             'httpClient'     => $this->http->buildClient(5),
-            'optionProvider' => new HttpBasicAuthOptionProvider(),
+            'optionProvider' => new OidcPublicClientOptionProvider(),
         ]);
 
         foreach ($this->getAdditionalScopes() as $scope) {
