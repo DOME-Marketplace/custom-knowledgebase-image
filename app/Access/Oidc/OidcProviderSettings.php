@@ -154,14 +154,29 @@ class OidcProviderSettings
 
     /**
      * Filter the given JWK keys down to just those we support.
+     * Supports RSA/RS256 and EC P-256/ES256.
      */
     protected function filterKeys(array $keys): array
     {
         return array_filter($keys, function (array $key) {
-            $alg = $key['alg'] ?? 'RS256';
+            $kty = $key['kty'] ?? '';
+            $alg = $key['alg'] ?? null;
             $use = $key['use'] ?? 'sig';
 
-            return $key['kty'] === 'RSA' && $use === 'sig' && $alg === 'RS256';
+            if ($use !== 'sig') {
+                return false;
+            }
+
+            if ($kty === 'RSA') {
+                return is_null($alg) || $alg === 'RS256';
+            }
+
+            if ($kty === 'EC') {
+                $crv = $key['crv'] ?? '';
+                return $crv === 'P-256' && (is_null($alg) || $alg === 'ES256');
+            }
+
+            return false;
         });
     }
 

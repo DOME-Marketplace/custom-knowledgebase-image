@@ -119,8 +119,9 @@ class OidcJwtWithClaims implements ProvidesClaims
      */
     protected function validateTokenSignature(): void
     {
-        if ($this->header['alg'] !== 'RS256') {
-            throw new OidcInvalidTokenException("Only RS256 signature validation is supported. Token reports using {$this->header['alg']}");
+        $alg = $this->header['alg'] ?? '';
+        if (!in_array($alg, ['RS256', 'ES256'], true)) {
+            throw new OidcInvalidTokenException("Only RS256 and ES256 signature validation is supported. Token reports using {$alg}");
         }
 
         $parsedKeys = array_map(function ($key) {
