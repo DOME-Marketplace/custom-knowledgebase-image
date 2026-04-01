@@ -1,0 +1,8 @@
+.git
+node_modules
+vendor
+storage/uploads
+storage/logs
+public/uploads
+.env
+*.md
