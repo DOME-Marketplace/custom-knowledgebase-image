@@ -49,6 +49,8 @@ RUN set -x; \
     && curl -sS https://getcomposer.org/installer | php -- --version=$COMPOSER_VERSION \
     && php composer.phar install --no-dev --optimize-autoloader -d /var/www/bookstack/ \
     && rm -rf composer.phar /root/.composer \
+    && mkdir -p /var/www/bookstack/storage/logs \
+    && mkdir -p /var/www/bookstack/storage/framework/{cache,sessions,views} \
     && chown -R www-data:www-data /var/www/bookstack
 
 COPY php.ini /usr/local/etc/php/php.ini

@@ -14,7 +14,9 @@ use BookStack\Theming\ThemeEvents;
 use BookStack\Uploads\UserAvatars;
 use BookStack\Users\Models\User;
 use Illuminate\Support\Facades\Cache;
-use BookStack\Access\Oidc\OidcPublicClientOptionProvider;
+use League\OAuth2\Client\OptionProvider\HttpBasicAuthOptionProvider;
+use League\OAuth2\Client\OptionProvider\OptionProviderInterface;
+use League\OAuth2\Client\OptionProvider\PostAuthOptionProvider;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 
 /**
@@ -135,7 +137,7 @@ class OidcService
             'redirectUri' => url('/oidc/callback'),
         ], [
             'httpClient'     => $this->http->buildClient(5),
-            'optionProvider' => new OidcPublicClientOptionProvider(),
+            'optionProvider' => $this->getClientOptionProvider(),
         ]);
 
         foreach ($this->getAdditionalScopes() as $scope) {
@@ -143,6 +145,27 @@ class OidcService
         }
 
         return $provider;
+    }
+
+    /**
+     * Get the OAuth2 client option provider to use based on the configured client auth method.
+     * 'basic' sends credentials via HTTP Basic Auth header (default, confidential clients).
+     * 'post'  sends credentials in the request body (confidential clients).
+     * 'none'  omits client_secret entirely (public clients using PKCE).
+     */
+    protected function getClientOptionProvider(): OptionProviderInterface
+    {
+        $method = $this->config()['client_auth_method'] ?? 'basic';
+
+        if ($method === 'none') {
+            return new OidcPublicClientOptionProvider();
+        }
+
+        if ($method === 'post') {
+            return new PostAuthOptionProvider();
+        }
+
+        return new HttpBasicAuthOptionProvider();
     }
 
     /**

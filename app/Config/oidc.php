@@ -20,6 +20,12 @@ return [
     // OAuth2/OpenId client secret, as configured in your Authorization server.
     'client_secret' => env('OIDC_CLIENT_SECRET', null),
 
+    // The authentication method used by the client when making token endpoint requests.
+    // 'basic' sends credentials via HTTP Basic Auth header (default, for confidential clients).
+    // 'post'  sends credentials in the request body (for confidential clients).
+    // 'none'  omits client_secret entirely (for public clients using PKCE).
+    'client_auth_method' => env('OIDC_CLIENT_AUTH_METHOD', 'basic'),
+
     // The issuer of the identity token (id_token) this will be compared with
     // what is returned in the token.
     'issuer' => env('OIDC_ISSUER', null),
