@@ -5,10 +5,11 @@ import {
     LexicalEditor,
     LexicalNode,
     SerializedElementNode, Spread,
-    EditorConfig, DOMExportOutput,
+    EditorConfig, DOMExportOutput, $getSelection,
 } from 'lexical';
 
 import {extractDirectionFromElement} from "lexical/nodes/common";
+import {$showDetailsForm} from "../../ui/defaults/forms/objects";
 
 export type SerializedDetailsNode = Spread<{
     id: string;
@@ -63,6 +64,10 @@ export class DetailsNode extends ElementNode {
         return newNode;
     }
 
+    isShadowRoot(): boolean {
+        return true;
+    }
+
     createDOM(_config: EditorConfig, _editor: LexicalEditor) {
         const el = document.createElement('details');
         if (this.__id) {
@@ -77,6 +82,7 @@ export class DetailsNode extends ElementNode {
             el.setAttribute('open', 'true');
             el.removeAttribute('contenteditable');
         } else {
+            el.setAttribute('draggable', 'true');
             el.setAttribute('contenteditable', 'false');
         }
 
@@ -88,6 +94,30 @@ export class DetailsNode extends ElementNode {
             _editor.update(() => {
                 this.select();
             });
+        });
+        summary.addEventListener('pointerdown', event => {
+            _editor.update(() => {
+                this.select();
+            });
+
+            // We juggle the draggable so that the details element can be dragged when started from the summary,
+            // but details element otherwise remains undraggable when open to allow editing of its contents
+            el.draggable = true;
+            const pointerUpCallback = () => {
+                document.removeEventListener('pointerup', pointerUpCallback);
+                el.draggable = false;
+            };
+            document.addEventListener('pointerup', pointerUpCallback);
+        });
+
+        summary.addEventListener('dblclick', event => {
+            event.preventDefault();
+            const uiContext = _editor.getUiContext();
+            if (uiContext) {
+                _editor.read(() => {
+                    $showDetailsForm(this, uiContext);
+                });
+            }
         });
 
         el.append(summary);
@@ -101,8 +131,10 @@ export class DetailsNode extends ElementNode {
             dom.toggleAttribute('open', this.__open);
             if (this.__open) {
                 dom.removeAttribute('contenteditable');
+                dom.removeAttribute('draggable');
             } else {
                 dom.setAttribute('contenteditable', 'false');
+                dom.setAttribute('draggable', 'true');
             }
         }
 
@@ -153,6 +185,7 @@ export class DetailsNode extends ElementNode {
 
         element.removeAttribute('open');
         element.removeAttribute('contenteditable');
+        element.removeAttribute('draggable');
 
         return {element};
     }

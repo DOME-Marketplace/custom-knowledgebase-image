@@ -87,11 +87,15 @@ final class ZipExportBook extends ZipExportModel
             'id'    => ['nullable', 'int', $context->uniqueIdRule('book')],
             'name'  => ['required', 'string', 'min:1'],
             'description_html' => ['nullable', 'string'],
-            'cover' => ['nullable', 'string', $context->fileReferenceRule()],
+            'cover' => ['nullable', 'string', $context->imageFileReferenceRule()],
             'tags' => ['array'],
             'pages' => ['array'],
             'chapters' => ['array'],
         ];
+
+        if (isset($data['cover']) && is_string($data['cover'])) {
+            $context->trackUseOfFile($data['cover']);
+        }
 
         $errors = $context->validateData($data, $rules);
         $errors['tags'] = $context->validateRelations($data['tags'] ?? [], ZipExportTag::class);

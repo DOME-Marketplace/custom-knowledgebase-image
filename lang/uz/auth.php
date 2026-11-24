@@ -8,6 +8,7 @@ return [
 
     'failed' => 'Uchbu ma‘lumotlar, bizdagi ma‘lumotlarga mos kelmadi.',
     'throttle' => 'Kirishga urinishlar juda ko‘p. Iltimos :seconds soniyadan so‘ng urinib ko‘ring.',
+    'mfa_throttle' => 'Too many multi-factor verification attempts. Please try again in :seconds seconds.',
 
     // Login & Register
     'sign_up' => 'Ro‘yxatdan o‘tish',
@@ -20,6 +21,9 @@ return [
     'username' => 'Foydalanuvchi nomi',
     'email' => 'Elektron pochta',
     'password' => 'Parol',
+    'password_new' => 'New Password',
+    'password_new_confirm' => 'Confirm New Password',
+    'password_current' => 'Confirm Current Password',
     'password_confirm' => 'Parolni tasdiqlash',
     'password_hint' => 'Kamida 8 belgi bo‘lishi kerak',
     'forgot_password' => 'Parolni unutdingizmi?',

@@ -12,7 +12,8 @@ class CustomHtmlHeadContentProvider
 {
     public function __construct(
         protected CspService $cspService,
-        protected Cache $cache
+        protected Cache $cache,
+        protected ThemeService $themeService,
     ) {
     }
 
@@ -23,8 +24,9 @@ class CustomHtmlHeadContentProvider
     public function forWeb(): string
     {
         $content = $this->getSourceContent();
-        $hash = md5($content);
+        $hash = md5($content) . ':' . $this->themeService->getModulesHash();
         $html = $this->cache->remember('custom-head-web:' . $hash, 86400, function () use ($content) {
+            $content .= "\n" . $this->getModuleHeadContent();
             return HtmlNonceApplicator::prepare($content);
         });
 
@@ -52,5 +54,24 @@ class CustomHtmlHeadContentProvider
     protected function getSourceContent(): string
     {
         return setting('app-custom-head', '');
+    }
+
+    /**
+     * Get any custom head content from installed modules.
+     */
+    protected function getModuleHeadContent(): string
+    {
+        $content = '';
+        foreach ($this->themeService->getModules() as $module) {
+            $headContentPath = $module->path('head');
+            if (file_exists($headContentPath) && is_dir($headContentPath)) {
+                $htmlFiles = glob($headContentPath . '/*.html');
+                foreach ($htmlFiles as $file) {
+                    $content .= file_get_contents($file);
+                }
+            }
+        }
+
+        return $content;
     }
 }

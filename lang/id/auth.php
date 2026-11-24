@@ -8,6 +8,7 @@ return [
 
     'failed' => 'Kredensial tidak cocok dengan catatan kami.',
     'throttle' => 'Terlalu banyak upaya masuk. Silahkan mencoba lagi dalam :seconds detik.',
+    'mfa_throttle' => 'Too many multi-factor verification attempts. Please try again in :seconds seconds.',
 
     // Login & Register
     'sign_up' => 'Daftar',
@@ -20,6 +21,9 @@ return [
     'username' => 'Nama Pengguna',
     'email' => 'Email',
     'password' => 'Kata Sandi',
+    'password_new' => 'New Password',
+    'password_new_confirm' => 'Confirm New Password',
+    'password_current' => 'Confirm Current Password',
     'password_confirm' => 'Konfirmasi Kata Sandi',
     'password_hint' => 'Harus minimal 8 karakter',
     'forgot_password' => 'Lupa Password?',

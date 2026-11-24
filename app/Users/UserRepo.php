@@ -52,6 +52,25 @@ class UserRepo
     }
 
     /**
+     * Get a user by their external auth ID value.
+     * Returns null if no matching user found.
+     */
+    public function getByExternalAuthId(string $externalId): User|null
+    {
+        // We only really expect at most one user from the search, but as an extra layer of defence against database
+        // normalisation we search possible matches exactly against the value.
+        $users = User::query()->where('external_auth_id', '=', $externalId)->get();
+
+        foreach ($users as $user) {
+            if ($user->external_auth_id === $externalId) {
+                return $user;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Create a new basic instance of user with the given pre-validated data.
      *
      * @param array{name: string, email: string, password: ?string, external_auth_id: ?string, language: ?string, roles: ?array} $data
@@ -103,7 +122,7 @@ class UserRepo
     /**
      * Update the given user with the given data, but do not create an activity.
      *
-     * @param array{name: ?string, email: ?string, external_auth_id: ?string, password: ?string, roles: ?array<int>, language: ?string} $data
+     * @param array{name: ?string, email: ?string, external_auth_id: ?string, password: ?string, roles: ?array<int>, language: ?string, display_mode: ?string} $data
      *
      * @throws UserUpdateException
      */
@@ -128,10 +147,16 @@ class UserRepo
 
         if (!empty($data['password'])) {
             $user->password = Hash::make($data['password']);
+            $user->setRememberToken(Str::random(60));
         }
 
         if (!empty($data['language'])) {
             setting()->putUser($user, 'language', $data['language']);
+        }
+
+        if (!empty($data['display_mode'])) {
+            $value = $data['display_mode'] === 'dark' ? 'true' : 'false';
+            setting()->putUser($user, 'dark-mode-enabled', $value);
         }
 
         $user->save();
@@ -142,7 +167,7 @@ class UserRepo
     /**
      * Update the given user with the given data.
      *
-     * @param array{name: ?string, email: ?string, external_auth_id: ?string, password: ?string, roles: ?array<int>, language: ?string} $data
+     * @param array{name: ?string, email: ?string, external_auth_id: ?string, password: ?string, roles: ?array<int>, language: ?string, display_mode: ?string} $data
      *
      * @throws UserUpdateException
      */

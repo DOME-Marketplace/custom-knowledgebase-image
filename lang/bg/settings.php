@@ -51,7 +51,7 @@ return [
     'color_scheme' => 'Application Color Scheme',
     'color_scheme_desc' => 'Set the colors to use in the application user interface. Colors can be configured separately for dark and light modes to best fit the theme and ensure legibility.',
     'ui_colors_desc' => 'Set the application primary color and default link color. The primary color is mainly used for the header banner, buttons and interface decorations. The default link color is used for text-based links and actions, both within written content and in the application interface.',
-    'app_color' => 'Primary Color',
+    'app_color' => 'Основен цвят',
     'link_color' => 'Default Link Color',
     'content_colors_desc' => 'Set colors for all elements in the page organisation hierarchy. Choosing colors with a similar brightness to the default colors is recommended for readability.',
     'bookshelf_color' => 'Цвят на рафта',
@@ -104,7 +104,7 @@ return [
     'sort_rule_op_chapters_first' => 'Chapters First',
     'sort_rule_op_chapters_last' => 'Chapters Last',
     'sorting_page_limits' => 'Per-Page Display Limits',
-    'sorting_page_limits_desc' => 'Set how many items to show per-page in various lists within the system. Typically a lower amount will be more performant, while a higher amount avoids the need to click through multiple pages. Using an even multiple of 3 (18, 24, 30, etc...) is recommended.',
+    'sorting_page_limits_desc' => 'Set how many items to show per-page in various lists within the system. Typically a lower amount will be more performant, while a higher amount avoids the need to click through multiple pages. Using a multiple of 6 is recommended.',
 
     // Maintenance settings
     'maint' => 'Поддръжка',
@@ -206,7 +206,9 @@ return [
     'role_asset_users_note' => 'These permissions will technically also provide visibility & searching of users in the system.',
     'role_all' => 'Всички',
     'role_own' => 'Собствени',
+    'role_permission_aria' => ':action :resource: :value',
     'role_controlled_by_asset' => 'Контролирани от актива, към който са качени',
+    'role_controlled_by_page_delete' => 'Controlled by page delete permissions',
     'role_save' => 'Запази ролята',
     'role_users' => 'Потребители в тази роля',
     'role_users_none' => 'В момента няма потребители, назначени за тази роля',
@@ -263,6 +265,9 @@ return [
     'users_mfa_desc' => 'Настрой многофакторно удостверяване като втори слой сигурност на твоя профил.',
     'users_mfa_x_methods' => ':count метод е настроен|:count методи са настроени',
     'users_mfa_configure' => 'Конфигурирай методи',
+    'users_mfa_reset' => 'Reset Multi-Factor Authentication Methods',
+    'users_mfa_reset_desc' => 'This will reset and clear all configured multi-factor authentication methods for this user. If multi-factor authentication is required by any of their roles, they\'ll be prompted to configure new methods on their next login.',
+    'users_mfa_reset_confirm' => 'Are you sure you want to reset multi-factor authentication for this user?',
 
     // API Tokens
     'user_api_token_create' => 'Създай API маркер',
@@ -362,7 +367,9 @@ return [
         'ru' => 'Русский',
         'sk' => 'Slovensky',
         'sl' => 'Slovenščina',
+        'sr' => 'Српски',
         'sv' => 'Svenska',
+        'th' => 'ภาษาไทย',
         'tr' => 'Türkçe',
         'uk' => 'Українська',
         'uz' => 'O‘zbekcha',

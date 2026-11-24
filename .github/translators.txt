@@ -177,7 +177,7 @@ Alexander Predl (Harveyhase68) :: German
 Rem (Rem9000) :: Dutch
 Michał Stelmach (stelmach-web) :: Polish
 arniom :: French
-REMOVED_USER :: French; German; Dutch; Portuguese, Brazilian; Portuguese; Turkish; 
+REMOVED_USER :: French; German; Dutch; Portuguese, Brazilian; Portuguese; Turkish; Danish; 
 林祖年 (contagion) :: Chinese Traditional
 Siamak Guodarzi (siamakgoudarzi88) :: Persian
 Lis Maestrelo (lismtrl) :: Portuguese, Brazilian
@@ -444,7 +444,7 @@ Irjan Olsen (Irch) :: Norwegian Bokmal
 Aleksandar Jovanovic (jovanoviczaleksandar) :: Serbian (Cyrillic)
 Red (RedVortex) :: Hebrew
 xgrug :: Chinese Simplified
-HrCalmar :: Danish
+Calle Calmar (HrCalmar) :: Danish
 Avishay Rapp (AvishayRapp) :: Hebrew
 matthias4217 :: French
 Berke BOYLU2 (berkeboylu2) :: Turkish
@@ -530,3 +530,31 @@ Shadluk Avan (quldosh) :: Uzbek
 Marci (MartonPoto) :: Hungarian
 Michał Sadurski (wheeskeey) :: Polish
 JanDziaslo :: Polish
+Charllys Fernandes (CharllysFernandes) :: Portuguese, Brazilian
+Ilgiz Zigangirov (inov8) :: Russian
+Max Israelsson (Blezie) :: Swedish
+Skiddybison5924 (chris-devel0per) :: German Informal; German
+Veyilla Nightwhisper (Veyilla) :: German
+João Barbosa (hypeedd) :: Portuguese
+Abcdefg Hijklmn (collatek) :: Korean
+Suthep Yonphimai (tomztt) :: Thai
+MrClock (MrClock8163) :: Hungarian
+Elena0875 :: Russian
+FelixFrizzy :: German
+Pedro de Mattia (pdmtt) :: Portuguese, Brazilian
+lonestan :: Russian
+Paul Kernstock (kernstock) :: German
+brtbr :: German; German Informal
+Ricardo Covelo (covelo12) :: Portuguese
+Bojan Maksimovic (PolarniMeda) :: Serbian (Cyrillic)
+Dian Prawira (wiradian84) :: Indonesian
+Tim (timakai) :: Dutch; German; German Informal; French; Romanian; Catalan; Czech; Danish; Finnish; Hungarian; Italian; Japanese; Korean; Polish; Russian; Ukrainian; Chinese Simplified; Chinese Traditional; Portuguese, Brazilian; Persian; Spanish, Argentina; Croatian; Norwegian Nynorsk; Estonian; Uzbek; Norwegian Bokmal
+dadda123 :: Swedish
+Julien Muggli (JulienMuggli) :: French
+nomoreshow :: Turkish
+Qasem Talaee (qasem_talaee) :: Persian
+ddeicide :: Bulgarian
+Luca (luca90043) :: German
+AlwaleedAlwabel (Nick390) :: Arabic
+kpfurtak :: Polish
+Jonatan Nyberg (NickWick) :: Swedish

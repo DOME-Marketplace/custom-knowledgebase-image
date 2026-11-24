@@ -173,6 +173,7 @@ return [
     'books_sort_desc' => 'Verplaats hoofdstukken en pagina\'s door het boek om ze te organiseren. Andere boeken kunnen worden toegevoegd zodat hoofdstukken en pagina\'s gemakkelijk tussen boeken kunnen worden verplaatst. Het is mogelijk om een automatische sorteerregel in te stellen die de inhoud zal sorteren bij wijzigingen.',
     'books_sort_auto_sort' => 'Automatisch Sorteren',
     'books_sort_auto_sort_active' => 'Automatisch Sorteren Actief: :sortName',
+    'books_sort_auto_sort_creation_hint' => 'Regels voor automatisch sorteren kunnen worden aangemaakt door een bevoegde gebruiker in het gedeelte "Lijsten & Sorteren" van de instellingen.',
     'books_sort_named' => 'Sorteer boek :bookName',
     'books_sort_name' => 'Sorteren op naam',
     'books_sort_created' => 'Sorteren op datum van aanmaken',
@@ -330,6 +331,9 @@ return [
 
     // Editor Sidebar
     'toggle_sidebar' => 'Zijbalk Tonen/Verbergen',
+    'page_contents' => 'Pagina Inhoud',
+    'page_contents_none' => 'Geen koppen gevonden binnen de inhoud van deze pagina.',
+    'page_contents_info' => 'Het inhoudsmenu wordt gemaakt van alle koppen op een pagina.',
     'page_tags' => 'Pagina Labels',
     'chapter_tags' => 'Hoofdstuk Labels',
     'book_tags' => 'Boek Labels',

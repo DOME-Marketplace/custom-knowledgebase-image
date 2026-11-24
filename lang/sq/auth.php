@@ -8,6 +8,7 @@ return [
 
     'failed' => 'Këto kredenciale nuk përputhen me të dhënat tona.',
     'throttle' => 'Shumë përpjekje për hyrje. Ju lutemi provoni përsëri në :seconds sekonda.',
+    'mfa_throttle' => 'Too many multi-factor verification attempts. Please try again in :seconds seconds.',
 
     // Login & Register
     'sign_up' => 'Regjistrohu',
@@ -20,6 +21,9 @@ return [
     'username' => 'Emri i përdoruesit',
     'email' => 'Email',
     'password' => 'Fjalkalimi',
+    'password_new' => 'New Password',
+    'password_new_confirm' => 'Confirm New Password',
+    'password_current' => 'Confirm Current Password',
     'password_confirm' => 'Konfirmo fjalëkalimin',
     'password_hint' => 'Duhet të jetë të paktën 8 karaktere',
     'forgot_password' => 'Keni harruar fjalëkalimin?',

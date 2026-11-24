@@ -104,7 +104,7 @@ return [
     'sort_rule_op_chapters_first' => 'Kapitler først',
     'sort_rule_op_chapters_last' => 'De sidste kapitler',
     'sorting_page_limits' => 'Visningsgrænser pr. side',
-    'sorting_page_limits_desc' => 'Angiv, hvor mange elementer der skal vises pr. side i forskellige lister i systemet. Typisk vil et lavere beløb være mere effektivt, mens et højere beløb undgår behovet for at klikke sig igennem flere sider. Det anbefales at bruge et lige multiplum af 3 (18, 24, 30 osv.).',
+    'sorting_page_limits_desc' => 'Indstil, hvor mange poster der skal vises pr. side i de forskellige lister i systemet. Normalt giver et lavere antal bedre ydeevne, mens et højere antal undgår, at man skal klikke sig igennem flere sider. Det anbefales at vælge et tal, der er et multiplum af 6.',
 
     // Maintenance settings
     'maint' => 'Vedligeholdelse',
@@ -206,7 +206,9 @@ return [
     'role_asset_users_note' => 'Disse tilladelser vil teknisk set også give synlighed og søgning efter brugere i systemet.',
     'role_all' => 'Alle',
     'role_own' => 'Eget',
+    'role_permission_aria' => ':action :resource: :value',
     'role_controlled_by_asset' => 'Styres af det medie/"asset", de uploades til',
+    'role_controlled_by_page_delete' => 'Styres af tilladelser til sletning af sider',
     'role_save' => 'Gem rolle',
     'role_users' => 'Brugere med denne rolle',
     'role_users_none' => 'Ingen brugere er i øjeblikket tildelt denne rolle',
@@ -263,6 +265,9 @@ return [
     'users_mfa_desc' => 'Opsæt multi-faktor godkendelse som et ekstra lag af sikkerhed for din brugerkonto.',
     'users_mfa_x_methods' => ':count metode konfigureret|:count metoder konfigureret',
     'users_mfa_configure' => 'Konfigurer metoder',
+    'users_mfa_reset' => 'Nulstil metoder til multifaktor-godkendelse',
+    'users_mfa_reset_desc' => 'Dette vil nulstille og slette alle konfigurerede metoder til multifaktor-godkendelse for denne bruger. Hvis multifaktor-godkendelse er påkrævet for en af brugerens roller, vil vedkommende blive bedt om at konfigurere nye metoder ved næste login.',
+    'users_mfa_reset_confirm' => 'Er du sikker på, at du vil nulstille multifaktorautentificering for denne bruger?',
 
     // API Tokens
     'user_api_token_create' => 'Opret API-token',
@@ -362,7 +367,9 @@ return [
         'ru' => 'Русский',
         'sk' => 'Slovensky',
         'sl' => 'Slovenščina',
+        'sr' => 'Српски',
         'sv' => 'Svenska',
+        'th' => 'Thailandsk',
         'tr' => 'Türkçe',
         'uk' => 'Українська',
         'uz' => 'O‘zbekcha',

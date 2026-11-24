@@ -125,9 +125,8 @@ class BookSorter
      */
     protected function applySortUpdates(BookSortMapItem $sortMapItem, array $modelMap): void
     {
-        /** @var BookChild $model */
         $model = $modelMap[$sortMapItem->type . ':' . $sortMapItem->id] ?? null;
-        if (!$model) {
+        if (!($model instanceof BookChild)) {
             return;
         }
 
@@ -169,7 +168,7 @@ class BookSorter
             $model->priority = $sortMapItem->sort;
         }
 
-        if ($chapterChanged || $priorityChanged) {
+        if ($priorityChanged || $chapterChanged) {
             $model::withoutTimestamps(fn () => $model->save());
         }
     }

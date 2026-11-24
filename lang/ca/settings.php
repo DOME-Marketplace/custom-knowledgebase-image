@@ -104,7 +104,7 @@ return [
     'sort_rule_op_chapters_first' => 'Capítols a l\'inici',
     'sort_rule_op_chapters_last' => 'Capítols al final',
     'sorting_page_limits' => 'Per-Page Display Limits',
-    'sorting_page_limits_desc' => 'Set how many items to show per-page in various lists within the system. Typically a lower amount will be more performant, while a higher amount avoids the need to click through multiple pages. Using an even multiple of 3 (18, 24, 30, etc...) is recommended.',
+    'sorting_page_limits_desc' => 'Set how many items to show per-page in various lists within the system. Typically a lower amount will be more performant, while a higher amount avoids the need to click through multiple pages. Using a multiple of 6 is recommended.',
 
     // Maintenance settings
     'maint' => 'Manteniment',
@@ -206,7 +206,9 @@ return [
     'role_asset_users_note' => 'These permissions will technically also provide visibility & searching of users in the system.',
     'role_all' => 'Tot',
     'role_own' => 'Propi',
+    'role_permission_aria' => ':action :resource: :value',
     'role_controlled_by_asset' => 'Controlat pel recurs a què estan pujats',
+    'role_controlled_by_page_delete' => 'Controlled by page delete permissions',
     'role_save' => 'Desa el rol',
     'role_users' => 'Usuaris assignats en aquest rol',
     'role_users_none' => 'No hi ha cap usuari assignat en aquest rol',
@@ -263,6 +265,9 @@ return [
     'users_mfa_desc' => 'Configureu l’autenticació multifactorial per a afegir una capa de seguretat extra al vostre compte d’usuari.',
     'users_mfa_x_methods' => 'Hi ha :count mètode configurat|Hi ha :count mètodes configurats',
     'users_mfa_configure' => 'Configura un mètode',
+    'users_mfa_reset' => 'Reset Multi-Factor Authentication Methods',
+    'users_mfa_reset_desc' => 'This will reset and clear all configured multi-factor authentication methods for this user. If multi-factor authentication is required by any of their roles, they\'ll be prompted to configure new methods on their next login.',
+    'users_mfa_reset_confirm' => 'Are you sure you want to reset multi-factor authentication for this user?',
 
     // API Tokens
     'user_api_token_create' => 'Crea un testimoni API',
@@ -362,7 +367,9 @@ return [
         'ru' => 'Русский',
         'sk' => 'Slovensky',
         'sl' => 'Slovenščina',
+        'sr' => 'Српски',
         'sv' => 'Svenska',
+        'th' => 'ภาษาไทย',
         'tr' => 'Türkçe',
         'uk' => 'Українська',
         'uz' => 'O‘zbekcha',

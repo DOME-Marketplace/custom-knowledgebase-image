@@ -104,7 +104,7 @@ return [
     'sort_rule_op_chapters_first' => 'Kapitoly jako první',
     'sort_rule_op_chapters_last' => 'Kapitoly jako poslední',
     'sorting_page_limits' => 'Počet zobrazených položek na stránce',
-    'sorting_page_limits_desc' => 'Nastavte, kolik položek se má zobrazit na stránce v různých seznamech na webu. Obvykle bude nižší počet výkonnější, zatímco vyšší počet eliminuje nutnost proklikávat se několika stránkami. Doporučuje se použít sudý násobek čísla 3 (18, 24, 30 atd.).',
+    'sorting_page_limits_desc' => 'Nastavte, kolik položek se má zobrazit na stránce v různých seznamech na webu. Obvykle bude nižší počet výkonnější, zatímco vyšší počet eliminuje nutnost proklikávat se několika stránkami. Doporučuje se použít násobek čísla 6.',
 
     // Maintenance settings
     'maint' => 'Údržba',
@@ -206,7 +206,9 @@ return [
     'role_asset_users_note' => 'Tato oprávnění zároveň umožní zobrazit a vyhledat uživatele v systému.',
     'role_all' => 'Vše',
     'role_own' => 'Vlastní',
+    'role_permission_aria' => ':action :resource: :value',
     'role_controlled_by_asset' => 'Řídí se obsahem, do kterého jsou nahrávány',
+    'role_controlled_by_page_delete' => 'Řídí se právem k odstranění stránky',
     'role_save' => 'Uložit roli',
     'role_users' => 'Uživatelé mající tuto roli',
     'role_users_none' => 'Žádný uživatel nemá tuto roli',
@@ -259,10 +261,13 @@ return [
     'users_api_tokens_create' => 'Vytvořit Token',
     'users_api_tokens_expires' => 'Vyprší',
     'users_api_tokens_docs' => 'Dokumentace API',
-    'users_mfa' => 'Vícefázové ověření',
+    'users_mfa' => 'Vícefaktorové ověření',
     'users_mfa_desc' => 'Nastavit vícefaktorové ověřování jako další vrstvu zabezpečení vašeho uživatelského účtu.',
     'users_mfa_x_methods' => ':count nastavená metoda|:count nastavených metod',
     'users_mfa_configure' => 'Konfigurovat metody',
+    'users_mfa_reset' => 'Obnova metod vícefaktorového ověření',
+    'users_mfa_reset_desc' => 'Tímto se obnoví a vymažou všechny nakonfigurované metody vícefaktorového ověřování pro tohoto uživatele. Pokud některá z jeho rolí vyžaduje vícefaktorové ověřování, bude při příštím přihlášení vyzván k nastavení nových metod.',
+    'users_mfa_reset_confirm' => 'Opravdu chcete obnovit vícefaktorové ověřování pro tohoto uživatele?',
 
     // API Tokens
     'user_api_token_create' => 'Vytvořit API Token',
@@ -362,7 +367,9 @@ return [
         'ru' => 'Русский',
         'sk' => 'Slovensky',
         'sl' => 'Slovenščina',
+        'sr' => 'Српски',
         'sv' => 'Svenska',
+        'th' => 'ภาษาไทย',
         'tr' => 'Türkçe',
         'uk' => 'Українська',
         'uz' => 'O‘zbekcha',

@@ -4,6 +4,8 @@ namespace Tests\Entity;
 
 use BookStack\Activity\ActivityType;
 use BookStack\Entities\Models\Page;
+use BookStack\Entities\Models\PageRevision;
+use BookStack\Permissions\Permission;
 use Tests\TestCase;
 
 class PageRevisionTest extends TestCase
@@ -117,7 +119,7 @@ class PageRevisionTest extends TestCase
     {
         $this->asEditor();
         $page = $this->entities->page();
-        $this->createRevisions($page, 1, ['name' => 'updated page abc123', 'html' => '<p>new contente def456</p>', 'summary' => 'My first update']);
+        $this->createRevisions($page, 1, ['name' => 'updated page abc123', 'html' => '<p>new contente def456</p>', 'changelog' => 'My first update']);
         $this->createRevisions($page, 1, ['html' => '<p>new content</p>']);
         $page->refresh();
 
@@ -257,6 +259,33 @@ class PageRevisionTest extends TestCase
         $revisionView->assertDontSee('dontwantthishere');
     }
 
+    public function test_access_to_revision_operation_requires_revision_view_all_permission()
+    {
+        $editor = $this->users->editor();
+        $this->actingAs($editor);
+
+        $page = $this->entities->page();
+        $this->createRevisions($page, 3);
+        /** @var PageRevision $revision */
+        $revision = $page->revisions()->orderBy('id', 'desc')->first();
+
+        $this->get($page->getUrl())->assertSee($page->getUrl('/revisions'), false);
+        $this->get($page->getUrl('/revisions'))->assertOk();
+        $this->get($revision->getUrl())->assertOk();
+        $this->get($revision->getUrl('/changes'))->assertOk();
+        $this->put($revision->getUrl('/restore'))->assertRedirect($page->getUrl());
+        $this->delete($revision->getUrl('/delete'))->assertRedirect($page->getUrl('/revisions'));
+
+        $this->permissions->removeUserRolePermissions($editor, [Permission::RevisionViewAll]);
+
+        $this->get($page->getUrl())->assertDontSee($page->getUrl('/revisions'), false);
+        $this->assertPermissionError($this->get($page->getUrl('/revisions')));
+        $this->assertPermissionError($this->get($revision->getUrl()));
+        $this->assertPermissionError($this->get($revision->getUrl('/changes')));
+        $this->assertPermissionError($this->put($revision->getUrl('/restore')));
+        $this->assertPermissionError($this->delete($revision->getUrl('/delete')));
+    }
+
     public function test_revision_restore_action_only_visible_with_permission()
     {
         $page = $this->entities->page();
@@ -298,7 +327,7 @@ class PageRevisionTest extends TestCase
         $user = user();
 
         for ($i = 0; $i < $times; $i++) {
-            $data = ['name' => 'Page update' . $i, 'summary' => 'Update entry' . $i];
+            $data = ['name' => 'Page update' . $i, 'changelog' => 'Update entry' . $i];
             if (!isset($attrs['markdown'])) {
                 $data['html'] = '<p>My update page</p>';
             }

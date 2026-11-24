@@ -63,7 +63,6 @@ import {
   toggleTextFormatType,
 } from './LexicalUtils';
 import {$createTabNode, $isTabNode} from './nodes/LexicalTabNode';
-import {$selectSingleNode} from "../../utils/selection";
 
 export type TextPointType = {
   _selection: BaseSelection;
@@ -1283,7 +1282,7 @@ export class RangeSelection implements BaseSelection {
     if (
       insertedParagraph &&
       $isElementNode(lastInsertedBlock) &&
-      (insertedParagraph.canMergeWhenEmpty() || INTERNAL_$isBlock(lastToInsert))
+      (insertedParagraph.canMergeWhenEmpty() || INTERNAL_$isBlock(lastToInsert) || ($isElementNode(lastToInsert) && lastToInsert.isShadowRoot()))
     ) {
       lastInsertedBlock.append(...insertedParagraph.getChildren());
       insertedParagraph.remove();
@@ -2220,8 +2219,21 @@ export function $createRangeSelection(): RangeSelection {
   return new RangeSelection(anchor, focus, 0, '');
 }
 
+export function $createCollapsedRangeSelectionForNode(node: LexicalNode, offset: number = 0): RangeSelection {
+  const type = $isTextNode(node) ? 'text' : 'element';
+  const anchor = $createPoint(node.getKey(), offset, type);
+  const focus = $createPoint(node.getKey(), offset, type);
+  return new RangeSelection(anchor, focus, 0, '');
+}
+
 export function $createNodeSelection(): NodeSelection {
   return new NodeSelection(new Set());
+}
+
+function $selectSingleNode(node: LexicalNode): void {
+  const nodeSelection = $createNodeSelection();
+  nodeSelection.add(node.getKey());
+  $setSelection(nodeSelection);
 }
 
 export function $internalCreateSelection(

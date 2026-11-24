@@ -104,7 +104,7 @@ return [
     'sort_rule_op_chapters_first' => 'الفصول الأولى',
     'sort_rule_op_chapters_last' => 'الفصول الأخيرة',
     'sorting_page_limits' => 'حدود العرض لكل صفحة',
-    'sorting_page_limits_desc' => 'تعيين عدد العناصر لإظهار كل صفحة في قوائم مختلفة داخل النظام. عادةً ما يكون الرقم الأقل هو الأكثر أداء، بينما وضع رقم أعلى يغني عن النقر على صفحات متعددة. يوصى باستخدام مضاعفات رقم ٣ (18 و 24 و 30 و إلخ...).',
+    'sorting_page_limits_desc' => 'Set how many items to show per-page in various lists within the system. Typically a lower amount will be more performant, while a higher amount avoids the need to click through multiple pages. Using a multiple of 6 is recommended.',
 
     // Maintenance settings
     'maint' => 'الصيانة',
@@ -206,7 +206,9 @@ return [
     'role_asset_users_note' => 'These permissions will technically also provide visibility & searching of users in the system.',
     'role_all' => 'الكل',
     'role_own' => 'ما يخص',
+    'role_permission_aria' => ':action :resource: :value',
     'role_controlled_by_asset' => 'يتحكم فيها الأصول التي يتم رفعها إلى',
+    'role_controlled_by_page_delete' => 'Controlled by page delete permissions',
     'role_save' => 'حفظ الدور',
     'role_users' => 'مستخدمون داخل هذا الدور',
     'role_users_none' => 'لم يتم تعيين أي مستخدمين لهذا الدور',
@@ -263,6 +265,9 @@ return [
     'users_mfa_desc' => 'إعداد المصادقة متعددة العوامل كطبقة إضافية من الأمان لحساب المستخدم الخاص بك.',
     'users_mfa_x_methods' => ':count طريقة مُهيأة | :count طرق مُهيأة',
     'users_mfa_configure' => 'إعداد الطرق',
+    'users_mfa_reset' => 'Reset Multi-Factor Authentication Methods',
+    'users_mfa_reset_desc' => 'This will reset and clear all configured multi-factor authentication methods for this user. If multi-factor authentication is required by any of their roles, they\'ll be prompted to configure new methods on their next login.',
+    'users_mfa_reset_confirm' => 'Are you sure you want to reset multi-factor authentication for this user?',
 
     // API Tokens
     'user_api_token_create' => 'قم بإنشاء رمز API',
@@ -362,7 +367,9 @@ return [
         'ru' => 'Русский',
         'sk' => 'Slovensky',
         'sl' => 'Slovenščina',
+        'sr' => 'Српски',
         'sv' => 'Svenska',
+        'th' => 'ภาษาไทย',
         'tr' => 'Türkçe',
         'uk' => 'Українська',
         'uz' => 'O‘zbekcha',

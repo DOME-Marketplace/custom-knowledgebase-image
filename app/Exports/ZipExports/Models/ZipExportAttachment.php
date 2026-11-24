@@ -45,9 +45,13 @@ final class ZipExportAttachment extends ZipExportModel
         $rules = [
             'id'    => ['nullable', 'int', $context->uniqueIdRule('attachment')],
             'name'  => ['required', 'string', 'min:1'],
-            'link'  => ['required_without:file', 'nullable', 'string'],
+            'link'  => ['required_without:file', 'nullable', 'string', 'max:2000', 'safe_url'],
             'file'  => ['required_without:link', 'nullable', 'string', $context->fileReferenceRule()],
         ];
+
+        if (isset($data['file']) && is_string($data['file'])) {
+            $context->trackUseOfFile($data['file']);
+        }
 
         return $context->validateData($data, $rules);
     }

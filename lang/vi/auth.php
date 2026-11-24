@@ -8,6 +8,7 @@ return [
 
     'failed' => 'Thông tin đăng nhập này không khớp với dữ liệu của chúng tôi.',
     'throttle' => 'Quá nhiều lần đăng nhập sai. Vui lòng thử lại sau :seconds giây.',
+    'mfa_throttle' => 'Too many multi-factor verification attempts. Please try again in :seconds seconds.',
 
     // Login & Register
     'sign_up' => 'Đăng ký',
@@ -20,6 +21,9 @@ return [
     'username' => 'Tên đăng nhập',
     'email' => 'Email',
     'password' => 'Mật khẩu',
+    'password_new' => 'New Password',
+    'password_new_confirm' => 'Confirm New Password',
+    'password_current' => 'Confirm Current Password',
     'password_confirm' => 'Xác nhận mật khẩu',
     'password_hint' => 'Phải có ít nhất 8 ký tự',
     'forgot_password' => 'Quên Mật khẩu?',

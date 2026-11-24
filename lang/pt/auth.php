@@ -8,6 +8,7 @@ return [
 
     'failed' => 'Estas credenciais não coincidem com os nossos registos.',
     'throttle' => 'Demasiadas tentativas de acesso. Tente novamente em :seconds segundos.',
+    'mfa_throttle' => 'Foram efetuadas demasiadas tentativas de verificação multifatorial. Por favor, tente novamente daqui a :seconds segundos.',
 
     // Login & Register
     'sign_up' => 'Registar',
@@ -20,6 +21,9 @@ return [
     'username' => 'Nome de utilizador',
     'email' => 'E-mail',
     'password' => 'Palavra-passe',
+    'password_new' => 'New Password',
+    'password_new_confirm' => 'Confirm New Password',
+    'password_current' => 'Confirm Current Password',
     'password_confirm' => 'Confirmar Palavra-passe',
     'password_hint' => 'Deve ter no mínimo 8 caracteres',
     'forgot_password' => 'Esqueceu-se da palavra-passe?',

@@ -104,7 +104,7 @@ return [
     'sort_rule_op_chapters_first' => 'Capitoli Prima',
     'sort_rule_op_chapters_last' => 'Capitoli dopo',
     'sorting_page_limits' => 'Limiti Visualizzazione Per Pagina',
-    'sorting_page_limits_desc' => 'Imposta il numero di elementi da visualizzare per pagina nei vari elenchi all\'interno del sistema. In genere, un numero inferiore garantisce prestazioni migliori, mentre un numero più elevato evita la necessità di cliccare su più pagine. Si consiglia di utilizzare un multiplo pari di 3 (18, 24, 30, ecc...).',
+    'sorting_page_limits_desc' => 'Imposta il numero di elementi da visualizzare per pagina nei vari elenchi del sistema. In genere, un numero inferiore garantisce prestazioni migliori, mentre un numero maggiore evita di dover sfogliare più pagine. Si consiglia di utilizzare un multiplo di 6.',
 
     // Maintenance settings
     'maint' => 'Manutenzione',
@@ -206,7 +206,9 @@ return [
     'role_asset_users_note' => 'Queste autorizzazioni forniranno tecnicamente anche la visibilità e la ricerca di utenti nel sistema.',
     'role_all' => 'Tutti',
     'role_own' => 'Propri',
+    'role_permission_aria' => ':action :resource: :value',
     'role_controlled_by_asset' => 'Controllato dall\'entità in cui sono caricati',
+    'role_controlled_by_page_delete' => 'Controllato dai permessi di cancellazione della pagina',
     'role_save' => 'Salva ruolo',
     'role_users' => 'Utenti in questo ruolo',
     'role_users_none' => 'Nessun utente assegnato a questo ruolo',
@@ -263,6 +265,9 @@ return [
     'users_mfa_desc' => 'Imposta l\'autenticazione multi-fattore come misura di sicurezza aggiuntiva per il tuo account.',
     'users_mfa_x_methods' => ':count metodo configurato|:count metodi configurati',
     'users_mfa_configure' => 'Configura metodi',
+    'users_mfa_reset' => 'Reimposta Metodi Di Autenticazione Multi-Fattore',
+    'users_mfa_reset_desc' => 'Questo ripristinerà e cancellerà tutti i metodi di autenticazione multi-fattore configurati per questo utente. Se l\'autenticazione multi-fattore è richiesta da uno qualsiasi dei loro ruoli, sarà richiesto loro di configurare nuovi metodi al loro prossimo accesso.',
+    'users_mfa_reset_confirm' => 'Sei sicuro di voler resettare l\'autenticazione multi-fattore per questo utente?',
 
     // API Tokens
     'user_api_token_create' => 'Crea token API',
@@ -362,7 +367,9 @@ return [
         'ru' => 'Russo',
         'sk' => 'Sloveno',
         'sl' => 'Sloveno',
+        'sr' => 'Српски',
         'sv' => 'Svedese',
+        'th' => 'Thailandese',
         'tr' => 'Turco',
         'uk' => 'Ucraino',
         'uz' => 'O‘zbekcha',

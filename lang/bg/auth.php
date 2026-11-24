@@ -8,6 +8,7 @@ return [
 
     'failed' => 'Въведените данни не съвпадат с информацията в системата.',
     'throttle' => 'Твърде много опити за влизане. Опитайте пак след :seconds секунди.',
+    'mfa_throttle' => 'Твърде много опити за мултифакторна верификация. Опитайте пак след :seconds секунди.',
 
     // Login & Register
     'sign_up' => 'Регистриране',
@@ -20,6 +21,9 @@ return [
     'username' => 'Потребителско име',
     'email' => 'Имейл',
     'password' => 'Парола',
+    'password_new' => 'New Password',
+    'password_new_confirm' => 'Confirm New Password',
+    'password_current' => 'Confirm Current Password',
     'password_confirm' => 'Потвърди паролата',
     'password_hint' => 'Трябва да бъде поне 8 символа',
     'forgot_password' => 'Забравена парола?',

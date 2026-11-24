@@ -38,7 +38,7 @@ class BooksApiTest extends TestCase
         $book = $this->entities->book();
 
         $baseRepo = $this->app->make(BaseRepo::class);
-        $image = $this->files->uploadedImage('book_cover');
+        $image = $this->files->uploadedImage('book_cover.png');
         $baseRepo->updateCoverImage($book, $image);
 
         $resp = $this->getJson($this->baseEndpoint . '?filter[id]=' . $book->id);
@@ -186,6 +186,37 @@ class BooksApiTest extends TestCase
 
         $resp = $this->getJson($this->baseEndpoint . "/{$book->id}");
         $resp->assertJsonMissing(['name' => $customName]);
+    }
+
+    public function test_read_endpoint_lists_visible_shelves_the_book_is_assigned_to()
+    {
+        $this->actingAsApiEditor();
+        $shelf = $this->entities->shelf();
+        $otherShelf = $this->entities->shelf();
+        $book = $this->entities->book();
+        $book->shelves()->detach();
+
+        $book->shelves()->attach($shelf);
+        $book->shelves()->attach($otherShelf);
+
+        $this->assertEquals(2, $book->shelves()->count());
+
+        $this->permissions->disableEntityInheritedPermissions($otherShelf);
+
+        $resp = $this->getJson("{$this->baseEndpoint}/{$book->id}");
+        $resp->assertOk();
+        $resp->assertJsonCount(1, 'shelves');
+        $resp->assertJson([
+            'shelves' => [
+                [
+                    'id' => $shelf->id,
+                    'name' => $shelf->name,
+                    'slug' => $shelf->slug,
+                ]
+            ]
+        ]);
+        $resp->assertJsonMissingPath('shelves.0.description');
+        $resp->assertJsonMissingPath('shelves.0.pivot');
     }
 
     public function test_update_endpoint()

@@ -3,6 +3,7 @@
 namespace BookStack\Exports\ZipExports;
 
 use BookStack\Exports\ZipExports\Models\ZipExportModel;
+use BookStack\Uploads\ImageService;
 use Illuminate\Validation\Factory;
 
 class ZipValidationHelper
@@ -15,6 +16,14 @@ class ZipValidationHelper
      * @var array<string, bool>
      */
     protected array $validatedIds = [];
+
+    /**
+     * Local store of ZIP file references used during validation.
+     * This may contain (and is expected to support) duplicates in the event multiple items reference the same file.
+     * This is used for late-stage validation for file size limits.
+     * @var string[]
+     */
+    protected array $fileReferenceUses = [];
 
     public function __construct(
         public ZipExportReader $zipReader,
@@ -38,6 +47,16 @@ class ZipValidationHelper
         return new ZipFileReferenceRule($this, $acceptedMimes);
     }
 
+    public function imageFileReferenceRule(): ZipFileReferenceRule
+    {
+        return new ZipFileReferenceRule($this, ImageService::getSupportedMimeTypes());
+    }
+
+    public function trackUseOfFile(string $file): void
+    {
+        $this->fileReferenceUses[] = $file;
+    }
+
     public function uniqueIdRule(string $type): ZipUniqueIdRule
     {
         return new ZipUniqueIdRule($this, $type);
@@ -53,6 +72,14 @@ class ZipValidationHelper
         $this->validatedIds[$key] = true;
 
         return false;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getFileReferenceUses(): array
+    {
+        return $this->fileReferenceUses;
     }
 
     /**

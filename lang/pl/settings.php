@@ -104,7 +104,7 @@ return [
     'sort_rule_op_chapters_first' => 'Rozdziały na początku',
     'sort_rule_op_chapters_last' => 'Rozdziały na końcu',
     'sorting_page_limits' => 'Limity wyświetlania per strona',
-    'sorting_page_limits_desc' => 'Ustaw ile elementów pokazywać per strona w różnych listach w systemie. Zazwyczaj mniejsza ilość będzie bardziej wydajna, podczas gdy większa ilość unika konieczności przeglądania wielu stron. Zaleca się stosowanie parzystej wielokrotności 3 (18, 24, 30 itp...).',
+    'sorting_page_limits_desc' => 'Ustaw ile elementów pokazywać na stronie w różnych listach w systemie. Zazwyczaj mniejsza ilość będzie bardziej wydajna, podczas gdy większa ilość unika konieczności kliknięcia na wiele stron. Zaleca się stosowanie wielokrotności 6 razy.',
 
     // Maintenance settings
     'maint' => 'Konserwacja',
@@ -206,7 +206,9 @@ return [
     'role_asset_users_note' => 'Uprawnienia te mogą zapewnić również widoczność i wyszukiwanie użytkowników w systemie.',
     'role_all' => 'Wszyscy',
     'role_own' => 'Własne',
+    'role_permission_aria' => ':action :resource: :value',
     'role_controlled_by_asset' => 'Kontrolowane przez zasób, do którego zostały udostępnione',
+    'role_controlled_by_page_delete' => 'Kontrolowane przez uprawnienia do usuwania stron',
     'role_save' => 'Zapisz rolę',
     'role_users' => 'Użytkownicy w tej roli',
     'role_users_none' => 'Brak użytkowników zapisanych do tej roli',
@@ -227,7 +229,7 @@ return [
     'users_password_desc' => 'Ustaw hasło logowania do aplikacji. Hasło musi mieć przynajmniej 8 znaków.',
     'users_send_invite_text' => 'Możesz wybrać wysłanie do tego użytkownika wiadomości e-mail z zaproszeniem, która pozwala mu ustawić własne hasło, w przeciwnym razie możesz ustawić je samemu.',
     'users_send_invite_option' => 'Wyślij e-mail z zaproszeniem',
-    'users_external_auth_id' => 'Zewnętrzne identyfikatory autentykacji',
+    'users_external_auth_id' => 'Zewnętrzne identyfikatory uwierzytelniania',
     'users_external_auth_id_desc' => 'Gdy używany jest zewnętrzny system uwierzytelniania (np. SAML2, OIDC lub LDAP), to jest ID, które łączy tego użytkownika BookStack z kontem w systemie uwierzytelniania. Możesz zignorować to pole, jeśli używasz domyślnego uwierzytelniania e-mailem.',
     'users_password_warning' => 'Wypełnij poniższe tylko, jeśli chcesz zmienić hasło dla tego użytkownika.',
     'users_system_public' => 'Ten użytkownik reprezentuje każdego gościa odwiedzającego tę aplikację. Nie można się na niego zalogować, lecz jest przyznawany automatycznie.',
@@ -263,6 +265,9 @@ return [
     'users_mfa_desc' => 'Skonfiguruj uwierzytelnianie wieloskładnikowe jako dodatkową warstwę bezpieczeństwa dla swojego konta użytkownika.',
     'users_mfa_x_methods' => ':count metoda skonfigurowana|:count metody skonfigurowane',
     'users_mfa_configure' => 'Konfiguruj metody',
+    'users_mfa_reset' => 'Resetuj metody uwierzytelniania wieloetapowego',
+    'users_mfa_reset_desc' => 'Spowoduje to zresetowanie i wyczyszczenie wszystkich skonfigurowanych metod uwierzytelniania wieloetapowego dla tego użytkownika. Jeśli uwierzytelnianie wieloetapowe jest wymagane przez dowolną z ich ról, zostaną poproszone o skonfigurowanie nowych metod przy następnym logowaniu.',
+    'users_mfa_reset_confirm' => 'Czy na pewno chcesz zresetować uwierzytelnianie wieloskładnikowe dla tego użytkownika?',
 
     // API Tokens
     'user_api_token_create' => 'Utwórz klucz API',
@@ -362,7 +367,9 @@ return [
         'ru' => 'Русский',
         'sk' => 'Slovensky',
         'sl' => 'Slovenščina',
+        'sr' => 'Српски',
         'sv' => 'Svenska',
+        'th' => 'ภาษาไทย',
         'tr' => 'Türkçe',
         'uk' => 'Українська',
         'uz' => 'O‘zbekcha',

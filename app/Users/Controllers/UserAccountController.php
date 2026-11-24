@@ -10,6 +10,7 @@ use BookStack\Settings\UserNotificationPreferences;
 use BookStack\Settings\UserShortcutMap;
 use BookStack\Uploads\ImageRepo;
 use BookStack\Users\UserRepo;
+use BookStack\View\ViewBlockManager;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules\Password;
@@ -106,8 +107,8 @@ class UserAccountController extends Controller
      */
     public function updateShortcuts(Request $request)
     {
-        $enabled = $request->get('enabled') === 'true';
-        $providedShortcuts = $request->get('shortcut', []);
+        $enabled = $request->input('enabled') === 'true';
+        $providedShortcuts = $request->input('shortcut', []);
         $shortcuts = new UserShortcutMap($providedShortcuts);
 
         setting()->putForCurrentUser('ui-shortcuts', $shortcuts->toJson());
@@ -129,7 +130,6 @@ class UserAccountController extends Controller
 
         $query = user()->watches()->getQuery();
         $query = $permissions->restrictEntityRelationQuery($query, 'watches', 'watchable_id', 'watchable_type');
-        $query = $permissions->filterDeletedFromEntityRelationQuery($query, 'watches', 'watchable_id', 'watchable_type');
         $watches = $query->with('watchable')->paginate(20);
 
         $this->setPageTitle(trans('preferences.notifications'));
@@ -157,6 +157,37 @@ class UserAccountController extends Controller
         $this->showSuccessNotification(trans('preferences.notifications_update_success'));
 
         return redirect('/my-account/notifications');
+    }
+
+    /**
+     * Show the view for the "Interface Preferences" user account area.
+     */
+    public function showInterface(ViewBlockManager $viewBlockManager)
+    {
+        $this->setPageTitle(trans('preferences.interface'));
+
+        return view('users.account.interface', [
+            'category'       => 'interface',
+            'namedLocations' => $viewBlockManager->getNamedLocations(),
+        ]);
+    }
+
+    /**
+     * Handle the submission of the interface preferences form.
+     */
+    public function updateInterface(Request $request)
+    {
+        $this->preventAccessInDemoMode();
+
+        $user = user();
+        $validated = $this->validate($request, [
+            'language' => ['string', 'max:15', 'alpha_dash'],
+            'display_mode' => ['string', 'max:15', 'alpha_dash'],
+        ]);
+
+        $this->userRepo->update($user, $validated, userCan(Permission::UsersManage));
+
+        return redirect('/my-account/interface');
     }
 
     /**
@@ -188,12 +219,12 @@ class UserAccountController extends Controller
         }
 
         $validated = $this->validate($request, [
-            'password'         => ['required_with:password_confirm', Password::default()],
-            'password-confirm' => ['same:password', 'required_with:password'],
+            'password'         => ['required', Password::default()],
+            'password-confirm' => ['required', 'same:password'],
+            'password-current' => ['required', 'current_password:standard'],
         ]);
 
         $this->userRepo->update(user(), $validated, false);
-
         $this->showSuccessNotification(trans('preferences.auth_change_password_success'));
 
         return redirect('/my-account/auth');
@@ -218,7 +249,7 @@ class UserAccountController extends Controller
     {
         $this->preventAccessInDemoMode();
 
-        $requestNewOwnerId = intval($request->get('new_owner_id')) ?: null;
+        $requestNewOwnerId = intval($request->input('new_owner_id')) ?: null;
         $newOwnerId = userCan(Permission::UsersManage) ? $requestNewOwnerId : null;
 
         $this->userRepo->destroy(user(), $newOwnerId);

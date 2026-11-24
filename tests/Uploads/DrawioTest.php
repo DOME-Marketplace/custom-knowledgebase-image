@@ -45,6 +45,42 @@ class DrawioTest extends TestCase
         ]);
     }
 
+    public function test_get_image_as_base64_fails_if_related_page_in_recycle_bin()
+    {
+        $page = $this->entities->page();
+        $this->asAdmin();
+        $imageName = 'first-image.png';
+
+        $this->files->uploadGalleryImage($this, $imageName, $page->id);
+        /** @var Image $image */
+        $image = Image::query()->first();
+        $image->type = 'drawio';
+        $image->save();
+
+        $this->entities->sendToRecycleBin($page);
+
+        $imageGet = $this->getJson("/images/drawio/base64/{$image->id}");
+        $imageGet->assertStatus(404);
+    }
+
+    public function test_get_image_as_base64_fails_if_on_a_draft_for_another_user()
+    {
+        $user = $this->users->admin();
+        $this->actingAs($user);
+        $draft = $this->entities->newDraftPage();
+        $this->files->uploadGalleryImage($this, 'my-image.png', $draft->id);
+
+        /** @var Image $image */
+        $image = Image::query()->where('uploaded_to', '=', $draft->id)
+            ->where('type', '=', 'gallery')
+            ->first();
+        $image->type = 'drawio';
+        $image->save();
+
+        $imageGet = $this->asEditor()->getJson("/images/drawio/base64/{$image->id}");
+        $imageGet->assertStatus(404);
+    }
+
     public function test_drawing_base64_upload()
     {
         $page = $this->entities->page();
@@ -70,6 +106,47 @@ class DrawioTest extends TestCase
         $testImageData = $this->files->pngImageData();
         $uploadedImageData = file_get_contents(public_path($image->path));
         $this->assertTrue($testImageData === $uploadedImageData, 'Uploaded image file data does not match our test image as expected');
+    }
+
+    public function test_base64_upload_requires_edit_permission_to_page()
+    {
+        $page = $this->entities->page();
+        $editor = $this->users->editor();
+        $this->actingAs($editor);
+
+        $this->permissions->disableEntityInheritedPermissions($page);
+
+        $upload = function () use ($page) {
+            return $this->postJson('images/drawio', [
+                'uploaded_to' => $page->id,
+                'image'       => 'image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4gEcDCo5iYNs+gAAAB1pVFh0Q29tbWVudAAAAAAAQ3JlYXRlZCB3aXRoIEdJTVBkLmUHAAAAFElEQVQI12O0jN/KgASYGFABqXwAZtoBV6Sl3hIAAAAASUVORK5CYII=',
+            ]);
+        };
+
+        $upload()->assertStatus(404);
+
+        $this->permissions->setEntityPermissionsForRole($page, ['view'], $editor->roles()->first());
+        $upload()->assertStatus(403);
+
+        $this->permissions->setEntityPermissionsForRole($page, ['view', 'update'], $editor->roles()->first());
+        $upload()->assertStatus(200);
+    }
+
+    public function test_drawing_base64_upload_validates_data_as_image()
+    {
+        $page = $this->entities->page();
+        $editor = $this->users->editor();
+        $this->actingAs($editor);
+
+        $upload = $this->postJson('images/drawio', [
+            'uploaded_to' => $page->id,
+            'image'       => 'image/png;base64,' . base64_encode('i like turtles'),
+        ]);
+
+        $upload->assertStatus(422);
+        $upload->assertJsonValidationErrors([
+            'image' => 'The image must be a valid base64 URI containing data of image/png mime type.',
+        ]);
     }
 
     public function test_drawio_url_can_be_configured()

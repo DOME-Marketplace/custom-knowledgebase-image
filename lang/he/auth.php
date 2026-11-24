@@ -8,6 +8,7 @@ return [
 
     'failed' => 'פרטי ההתחברות אינם תואמים את הנתונים שלנו.',
     'throttle' => 'נסיונות התחברות מהירים מדי, יש להמתין :seconds שניות ולנסות שנית.',
+    'mfa_throttle' => 'Too many multi-factor verification attempts. Please try again in :seconds seconds.',
 
     // Login & Register
     'sign_up' => 'הרשמה למערכת',
@@ -20,6 +21,9 @@ return [
     'username' => 'שם משתמש',
     'email' => 'אי-מייל',
     'password' => 'סיסמא',
+    'password_new' => 'New Password',
+    'password_new_confirm' => 'Confirm New Password',
+    'password_current' => 'Confirm Current Password',
     'password_confirm' => 'אימות סיסמא',
     'password_hint' => '‏אורך הסיסמה חייב להיות לפחות 8 תווים',
     'forgot_password' => 'שכחת סיסמא?',

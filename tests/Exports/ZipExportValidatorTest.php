@@ -72,7 +72,7 @@ class ZipExportValidatorTest extends TestCase
         $this->assertEquals($expectedMessage, $results['book.chapters.1.id']);
     }
 
-    public function test_image_files_need_to_be_a_valid_detected_image_file()
+    public function test_page_image_files_need_to_be_a_valid_detected_image_file()
     {
         $validator = $this->getValidatorForData([
             'page' => [
@@ -88,6 +88,74 @@ class ZipExportValidatorTest extends TestCase
         $results = $validator->validate();
         $this->assertCount(1, $results);
 
-        $this->assertEquals('The file needs to reference a file of type image/png,image/jpeg,image/gif,image/webp, found text/plain.', $results['page.images.0.file']);
+        $this->assertEquals('The file needs to reference a file of type image/jpg,image/jpeg,image/png,image/gif,image/webp,image/avif, found text/plain.', $results['page.images.0.file']);
+    }
+
+    public function test_page_link_attachments_cant_be_data_or_js()
+    {
+        $validateResultCountByLink = [
+            'data:text/html,<p>hi</p>' => 1,
+            'javascript:alert(\'hi\')' => 1,
+            'mailto:email@example.com' => 0,
+        ];
+
+        foreach ($validateResultCountByLink as $link => $count) {
+            $validator = $this->getValidatorForData([
+                'page' => [
+                    'id' => 4,
+                    'name' => 'My page',
+                    'markdown' => 'hello',
+                    'attachments' => [
+                        ['id' => 4, 'name' => 'Attachment A', 'link' => $link],
+                    ],
+                ]
+            ]);
+
+            $results = $validator->validate();
+            $this->assertCount($count, $results);
+        }
+    }
+
+    public function test_book_cover_image_files_need_to_be_a_valid_detected_image_file()
+    {
+        $validator = $this->getValidatorForData([
+            'book' => [
+                'id' => 5,
+                'name' => 'My book',
+                'cover' => 'cat.png',
+            ]
+        ], ['cat.png' => $this->files->testFilePath('test-file.txt')]);
+
+        $results = $validator->validate();
+        $this->assertCount(1, $results);
+
+        $this->assertEquals('The cover needs to reference a file of type image/jpg,image/jpeg,image/png,image/gif,image/webp,image/avif, found text/plain.', $results['book.cover']);
+    }
+
+    public function test_file_references_total_size_must_be_within_a_reasonable_limit_related_to_app_upload_size_limit()
+    {
+        config()->set('app.upload_limit', 1);
+
+        $attachments = [];
+        $testFileToUse = $this->files->testFilePath('animated.png');
+        $testFileSize = filesize($testFileToUse);
+        $count = intval(ceil(1000000 / ($testFileSize - 5))) * 5;
+        for ($i = 0; $i < $count; $i++) {
+            $attachments[] = ['id' => $i, 'name' => 'Attachment ' . $i, 'file' => 'cat.png'];
+        }
+
+        $validator = $this->getValidatorForData([
+            'page' => [
+                'id' => 5,
+                'name' => 'My book',
+                'markdown' => 'Hello',
+                'attachments' => $attachments,
+            ]
+        ], ['cat.png' => $testFileToUse]);
+
+        $results = $validator->validate();
+
+        $this->assertCount(1, $results);
+        $this->assertEquals('The total size of all files in the import must not be more than 5 MB', $results['files']);
     }
 }

@@ -48,7 +48,7 @@ class ZipImportRunner
      * Returns the top-level entity item which was imported.
      * @throws ZipImportException
      */
-    public function run(Import $import, ?Entity $parent = null): Entity
+    public function run(Import $import, Book|Chapter|null $parent = null): Entity
     {
         $zipPath = $this->getZipPath($import);
         $reader = new ZipExportReader($zipPath);
@@ -82,10 +82,8 @@ class ZipImportRunner
             $entity = $this->importBook($exportModel, $reader);
         } else if ($exportModel instanceof ZipExportChapter) {
             $entity = $this->importChapter($exportModel, $parent, $reader);
-        } else if ($exportModel instanceof ZipExportPage) {
-            $entity = $this->importPage($exportModel, $parent, $reader);
         } else {
-            throw new ZipImportException(['No importable data found in import data.']);
+            $entity = $this->importPage($exportModel, $parent, $reader);
         }
 
         $this->references->replaceReferences();
@@ -98,7 +96,7 @@ class ZipImportRunner
 
     /**
      * Revert any files which have been stored during this import process.
-     * Considers files only, and avoids the database under the
+     * Considers files only and avoids the database under the
      * assumption that the database may already have been
      * reverted as part of a transaction rollback.
      */
@@ -131,8 +129,8 @@ class ZipImportRunner
         $book = $this->bookRepo->create([
             'name' => $exportBook->name,
             'description_html' => $exportBook->description_html ?? '',
-            'image' => $exportBook->cover ? $this->zipFileToUploadedFile($exportBook->cover, $reader) : null,
-            'tags' => $this->exportTagsToInputArray($exportBook->tags ?? []),
+            'image' => $exportBook->cover ? $this->zipFileToUploadedFile($exportBook->cover, $reader, true) : null,
+            'tags' => $this->exportTagsToInputArray($exportBook->tags),
         ]);
 
         if ($book->coverInfo()->getImage()) {
@@ -151,7 +149,7 @@ class ZipImportRunner
         foreach ($children as $child) {
             if ($child instanceof ZipExportChapter) {
                 $this->importChapter($child, $book, $reader);
-            } else if ($child instanceof ZipExportPage) {
+            } else {
                 $this->importPage($child, $book, $reader);
             }
         }
@@ -166,7 +164,7 @@ class ZipImportRunner
         $chapter = $this->chapterRepo->create([
             'name' => $exportChapter->name,
             'description_html' => $exportChapter->description_html ?? '',
-            'tags' => $this->exportTagsToInputArray($exportChapter->tags ?? []),
+            'tags' => $this->exportTagsToInputArray($exportChapter->tags),
         ], $parent);
 
         $exportPages = $exportChapter->pages;
@@ -199,7 +197,7 @@ class ZipImportRunner
             'name' => $exportPage->name,
             'markdown' => $exportPage->markdown ?? '',
             'html' => $exportPage->html ?? '',
-            'tags' => $this->exportTagsToInputArray($exportPage->tags ?? []),
+            'tags' => $this->exportTagsToInputArray($exportPage->tags),
         ]);
 
         $this->references->addPage($page, $exportPage);
@@ -229,18 +227,11 @@ class ZipImportRunner
 
     protected function importImage(ZipExportImage $exportImage, Page $page, ZipExportReader $reader): Image
     {
-        $mime = $reader->sniffFileMime($exportImage->file);
-        $extension = explode('/', $mime)[1];
-
-        $file = $this->zipFileToUploadedFile($exportImage->file, $reader);
+        $file = $this->zipFileToUploadedFile($exportImage->file, $reader, true);
         $image = $this->imageService->saveNewFromUpload(
             $file,
             $exportImage->type,
             $page->id,
-            null,
-            null,
-            true,
-            $exportImage->name . '.' . $extension,
         );
 
         $image->name = $exportImage->name;
@@ -263,7 +254,7 @@ class ZipImportRunner
         return $tags;
     }
 
-    protected function zipFileToUploadedFile(string $fileName, ZipExportReader $reader): UploadedFile
+    protected function zipFileToUploadedFile(string $fileName, ZipExportReader $reader, bool $forceExtensionFromMime = false): UploadedFile
     {
         if (!$reader->fileWithinSizeLimit($fileName)) {
             throw new ZipImportException([
@@ -272,14 +263,31 @@ class ZipImportRunner
         }
 
         $tempPath = tempnam(sys_get_temp_dir(), 'bszipextract');
+        $fileSize = $reader->fileSize($fileName);
         $fileStream = $reader->streamFile($fileName);
         $tempStream = fopen($tempPath, 'wb');
-        stream_copy_to_stream($fileStream, $tempStream);
+        $copied = stream_copy_to_stream($fileStream, $tempStream, $fileSize + 5);
         fclose($tempStream);
 
         $this->tempFilesToCleanup[] = $tempPath;
 
-        return new UploadedFile($tempPath, $fileName);
+        // Raise an error if actual file size exceeds the reported size
+        if ($copied > $fileSize) {
+            throw new ZipImportException([
+                "File $fileName exceeded the file size reported in the ZIP archive."
+            ]);
+        }
+
+        $intendedUploadName = $fileName;
+        if ($forceExtensionFromMime) {
+            $mime = $reader->sniffFileMime($fileName);
+            $extension = explode('/', $mime)[1];
+            if (!str_ends_with(strtolower($intendedUploadName), '.' . $extension)) {
+                $intendedUploadName .= '.' . $extension;
+            }
+        }
+
+        return new UploadedFile($tempPath, $intendedUploadName);
     }
 
     /**
@@ -302,7 +310,7 @@ class ZipImportRunner
             array_push($chapters, ...$exportModel->chapters);
         } else if ($exportModel instanceof ZipExportChapter) {
             $chapters[] = $exportModel;
-        } else if ($exportModel instanceof ZipExportPage) {
+        } else {
             $pages[] = $exportModel;
         }
 

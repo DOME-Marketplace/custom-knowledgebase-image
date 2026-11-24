@@ -471,7 +471,28 @@ class OidcTest extends TestCase
         $this->assertEquals('xXBennyTheGeezXx', $user->external_auth_id);
     }
 
-    public function test_auth_uses_mulitple_display_name_claims_if_configured()
+    public function test_auth_uses_external_id_as_exact_value()
+    {
+        // External auth id the same as we expect below but different casing
+        User::query()->forceCreate([
+            'email'            => 'otheruser@example.com',
+            'external_auth_id' => 'Benni202',
+            'email_confirmed'  => true,
+            'name'             => 'Barry Scott',
+        ]);
+
+        $resp = $this->runLogin([
+            'email'            => 'benny@example.com',
+            'sub'              => 'benni202',
+        ]);
+        $resp->assertRedirect('/');
+
+        $this->assertDatabaseHas('users', ['email' => 'benny@example.com']);
+        $this->assertEquals('benny@example.com', user()->email);
+        $this->assertEquals('benni202', user()->external_auth_id);
+    }
+
+    public function test_auth_uses_multiple_display_name_claims_if_configured()
     {
         config()->set(['oidc.display_name_claims' => 'first_name|last_name']);
 
@@ -820,6 +841,34 @@ class OidcTest extends TestCase
             'external_auth_id' => 'lenny1010101',
             'name' => 'Lenny',
         ]);
+    }
+
+    public function test_oidc_auth_pre_redirect_theme_event_with_return()
+    {
+        $args = [];
+        $callback = function (...$eventArgs) use (&$args) {
+            $args = $eventArgs;
+            return 'https://cats.example.com?beans=true';
+        };
+        Theme::listen(ThemeEvents::OIDC_AUTH_PRE_REDIRECT, $callback);
+
+        $resp = $this->post('/oidc/login');
+        $resp->assertRedirect('https://cats.example.com?beans=true');
+
+        $this->assertCount(1, $args);
+        $this->assertStringStartsWith('https://oidc.local/auth', $args[0]);
+    }
+
+    public function test_oidc_auth_pre_redirect_theme_event_with_no_return()
+    {
+        $callback = function ($redirectUrl) {
+            $redirectUrl = 'cat';
+        };
+        Theme::listen(ThemeEvents::OIDC_AUTH_PRE_REDIRECT, $callback);
+
+        $resp = $this->post('/oidc/login');
+        $redirect = $resp->headers->get('Location');
+        $this->assertStringStartsWith('https://oidc.local/auth?', $redirect);
     }
 
     public function test_pkce_used_on_authorize_and_access()

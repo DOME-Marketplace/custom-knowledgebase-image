@@ -30,8 +30,8 @@ return [
     'create' => 'Создание',
     'update' => 'Обновление',
     'edit' => 'Редактировать',
-    'archive' => 'Archive',
-    'unarchive' => 'Un-Archive',
+    'archive' => 'Архивировать',
+    'unarchive' => 'Вернуть из архива',
     'sort' => 'Сортировать',
     'move' => 'Переместить',
     'copy' => 'Скопировать',
@@ -84,6 +84,8 @@ return [
     'status_inactive' => 'Неактивен',
     'never' => 'Никогда',
     'none' => 'Нет',
+    'move_left' => 'Move Left',
+    'move_right' => 'Move Right',
 
     // Header
     'homepage' => 'Главная страница',

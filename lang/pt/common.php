@@ -30,8 +30,8 @@ return [
     'create' => 'Criar',
     'update' => 'Atualizar',
     'edit' => 'Editar',
-    'archive' => 'Archive',
-    'unarchive' => 'Un-Archive',
+    'archive' => 'Arquivar',
+    'unarchive' => 'Desarquivar',
     'sort' => 'Ordenar',
     'move' => 'Mover',
     'copy' => 'Copiar',
@@ -84,6 +84,8 @@ return [
     'status_inactive' => 'Inativo',
     'never' => 'Nunca',
     'none' => 'Nenhum',
+    'move_left' => 'Move Left',
+    'move_right' => 'Move Right',
 
     // Header
     'homepage' => 'Página inicial',

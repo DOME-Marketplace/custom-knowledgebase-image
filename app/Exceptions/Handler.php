@@ -25,6 +25,7 @@ class Handler extends ExceptionHandler
     protected $dontReport = [
         NotFoundException::class,
         StoppedAuthenticationException::class,
+        NotifyException::class,
     ];
 
     /**
@@ -125,15 +126,24 @@ class Handler extends ExceptionHandler
             $headers = $e->getHeaders();
         }
 
+        $responseData = [
+            'error' => [
+                'message' => 'An error occurred',
+            ],
+        ];
+
         if ($e instanceof ModelNotFoundException) {
+            $responseData['error']['message'] = 'The requested resource could not be found.';
             $code = 404;
         }
 
-        $responseData = [
-            'error' => [
-                'message' => $e->getMessage(),
-            ],
-        ];
+        if ($e instanceof ShowsApiExceptionMessage) {
+            $responseData['error']['message'] = $e->getMessageForApi();
+        }
+
+        if (app()->hasDebugModeEnabled()) {
+            $responseData['error']['message'] = $e->getMessage();
+        }
 
         if ($e instanceof ValidationException) {
             $responseData['error']['message'] = 'The given data was invalid.';
@@ -158,15 +168,5 @@ class Handler extends ExceptionHandler
         }
 
         return redirect()->guest('login');
-    }
-
-    /**
-     * Convert a validation exception into a JSON response.
-     *
-     * @param Request $request
-     */
-    protected function invalidJson($request, ValidationException $exception): JsonResponse
-    {
-        return response()->json($exception->errors(), $exception->status);
     }
 }

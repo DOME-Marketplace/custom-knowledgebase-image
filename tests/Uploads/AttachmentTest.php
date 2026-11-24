@@ -5,7 +5,9 @@ namespace Tests\Uploads;
 use BookStack\Entities\Models\Page;
 use BookStack\Entities\Repos\PageRepo;
 use BookStack\Entities\Tools\TrashCan;
+use BookStack\Permissions\Permission;
 use BookStack\Uploads\Attachment;
+use Illuminate\Testing\TestResponse;
 use Tests\TestCase;
 
 class AttachmentTest extends TestCase
@@ -51,6 +53,22 @@ class AttachmentTest extends TestCase
         $this->assertStringNotContainsString($fileName, $attachment->path);
         $this->assertStringEndsWith('-txt', $attachment->path);
         $this->files->deleteAllAttachmentFiles();
+    }
+
+    public function test_file_upload_does_not_indicate_inaccessible_page_existence()
+    {
+        $editor = $this->users->editor();
+        $page = $this->entities->page();
+        $fileName = 'upload_test_file.txt';
+        $this->permissions->disableEntityInheritedPermissions($page);
+        $this->permissions->grantUserRolePermissions($editor, [Permission::AttachmentCreateAll]);
+        $this->actingAs($editor);
+
+        $maxPageId = Page::query()->max('id') + 1;
+        $inaccessible = $this->files->uploadAttachmentFile($this, $fileName, $page->id);
+        $nonExisting = $this->files->uploadAttachmentFile($this, $fileName, $maxPageId);
+        $this->assertEquals($inaccessible->getStatusCode(), $nonExisting->getStatusCode());
+        $this->assertEquals(404, $inaccessible->getStatusCode());
     }
 
     public function test_file_display_and_access()
@@ -134,6 +152,29 @@ class AttachmentTest extends TestCase
         $resp->assertRedirect($link);
     }
 
+    public function test_attach_link_does_not_indicate_inaccessible_page_existence()
+    {
+        $editor = $this->users->editor();
+        $page = $this->entities->page();
+        $this->permissions->disableEntityInheritedPermissions($page);
+        $this->permissions->grantUserRolePermissions($editor, [Permission::AttachmentCreateAll]);
+        $this->actingAs($editor);
+
+        $maxPageId = Page::query()->max('id') + 1;
+        $inaccessible = $this->post('attachments/link', [
+            'attachment_link_url'         => 'https://example.com',
+            'attachment_link_name'        => 'Example Attachment Link',
+            'attachment_link_uploaded_to' => $page->id,
+        ]);
+        $nonExisting = $this->post('attachments/link', [
+            'attachment_link_url'         => 'https://example.com',
+            'attachment_link_name'        => 'Example Attachment Link',
+            'attachment_link_uploaded_to' => $maxPageId,
+        ]);
+        $this->assertEquals($inaccessible->getStatusCode(), $nonExisting->getStatusCode());
+        $this->assertEquals(404, $inaccessible->getStatusCode());
+    }
+
     public function test_attachment_updating()
     {
         $page = $this->entities->page();
@@ -156,6 +197,38 @@ class AttachmentTest extends TestCase
         $this->assertDatabaseHas('attachments', $expectedData);
 
         $this->files->deleteAllAttachmentFiles();
+    }
+
+    public function test_attachment_update_without_permission()
+    {
+        $page = $this->entities->page();
+        $attachment = Attachment::factory()->create(['uploaded_to' => $page->id]);
+
+        $this->permissions->disableEntityInheritedPermissions($page);
+
+        $resp = $this->asViewer()->put("attachments/{$attachment->id}", [
+            'attachment_edit_name' => 'My new attachment name',
+            'attachment_edit_url'  => 'https://test.example.com',
+        ]);
+
+        $resp->assertNotFound();
+    }
+
+    public function test_attachment_update_without_permission_with_validation_errors()
+    {
+        $page = $this->entities->page();
+        /** @var Attachment $attachment */
+        $attachment = Attachment::factory()->create(['uploaded_to' => $page->id]);
+
+        $this->permissions->disableEntityInheritedPermissions($page);
+
+        $resp = $this->asViewer()->put("attachments/{$attachment->id}", [
+            'attachment_edit_name' => '',
+            'attachment_edit_url'  => 'https://test.example.com',
+        ]);
+
+        $resp->assertNotFound();
+        $resp->assertDontSee($attachment->path);
     }
 
     public function test_file_deletion()
@@ -206,6 +279,21 @@ class AttachmentTest extends TestCase
         $this->files->deleteAllAttachmentFiles();
     }
 
+    public function test_attachment_deletion_requires_page_access()
+    {
+        $page = $this->entities->page();
+        $attachment = Attachment::factory()->create(['uploaded_to' => $page->id]);
+        $editor = $this->users->editor();
+
+        $this->permissions->disableEntityInheritedPermissions($page);
+        $this->permissions->grantUserRolePermissions($editor, [Permission::AttachmentDeleteAll]);
+
+        $resp = $this->actingAs($editor)->delete($attachment->getUrl());
+        $resp->assertNotFound();
+
+        $this->assertDatabaseHas('attachments', ['id' => $attachment->id]);
+    }
+
     public function test_attachment_access_without_permission_shows_404()
     {
         $admin = $this->users->admin();
@@ -224,6 +312,26 @@ class AttachmentTest extends TestCase
         $attachmentGet->assertSee('Attachment not found');
 
         $this->files->deleteAllAttachmentFiles();
+    }
+
+    public function test_attachment_edit_form_access_requires_view_permission()
+    {
+        $page = $this->entities->page();
+        /** @var Attachment $attachment */
+        $attachment = Attachment::factory()->create(['uploaded_to' => $page->id]);
+        $editor = $this->users->editor();
+
+        $this->permissions->disableEntityInheritedPermissions($page);
+        $this->permissions->grantUserRolePermissions($editor, [Permission::AttachmentUpdateAll]);
+        $this->permissions->setEntityPermissionsForRole($page, ['update'], $editor->roles()->first());
+
+        $resp = $this->actingAs($editor)->get("/attachments/edit/{$attachment->id}");
+        $resp->assertNotFound();
+
+        $this->permissions->setEntityPermissionsForRole($page, ['view', 'update'], $editor->roles()->first());
+        $resp = $this->actingAs($editor)->get("/attachments/edit/{$attachment->id}");
+        $resp->assertOk();
+        $resp->assertSee($attachment->name);
     }
 
     public function test_data_and_js_links_cannot_be_attached_to_a_page()
@@ -264,6 +372,34 @@ class AttachmentTest extends TestCase
             $this->assertDatabaseMissing('attachments', [
                 'path' => $badLink,
             ]);
+        }
+    }
+
+    public function test_existing_data_and_js_links_do_not_render_link()
+    {
+        $this->asAdmin();
+        $page = $this->entities->page();
+        $attachment = Attachment::factory()->create(['uploaded_to' => $page->id]);
+
+        $links = [
+            'javascript:alert("bunny")',
+            ' javascript:alert("bunny")',
+            'JavaScript:alert("bunny")',
+            "\t\n\t\nJavaScript:alert(\"bunny\")",
+            'data:text/html;bunny<a></a>',
+            'Data:text/html;bunny<a></a>',
+            'Data:text/html;bunny<a></a>',
+            'donk\tscript:alert("bunny")',
+            "donk\tscript:alert('bunny')",
+        ];
+
+        foreach ($links as $link) {
+            $attachment->path = $link;
+            $attachment->save();
+
+            $resp = $this->get($page->getUrl());
+            $resp->assertDontSee('bunny', false);
+            $resp->assertSee('#badlink', false);
         }
     }
 
@@ -311,6 +447,33 @@ class AttachmentTest extends TestCase
         $html->assertElementExists(".card[data-id=\"{$attachment->id}\"] button[title=\"Edit\"]");
     }
 
+    public function test_attachment_actions_fail_for_other_users_page_drafts()
+    {
+        $this->asAdmin();
+        $page = $this->entities->newDraftPage();
+        $this->files->uploadAttachmentFile($this, 'upload_test.txt', $page->id);
+        $attachment = $page->attachments()->first();
+
+        $user = $this->users->editor();
+        $this->permissions->grantUserRolePermissions($user, [Permission::AttachmentUpdateAll, Permission::AttachmentDeleteAll]);
+        $this->actingAs($user);
+
+        /** @var array<string, TestResponse> $actions */
+        $actions = [
+            'uploadUpdate' => $this->call('POST', "/attachments/upload/{$attachment->id}", [], [], ['file' => $this->files->uploadedTextFile('text.txt')]),
+            'getUpdateForm' => $this->get("/attachments/edit/{$attachment->id}"),
+            'update' => $this->put("/attachments/{$attachment->id}", ['attachment_edit_name' => 'new_name']),
+            'listForPage' => $this->get("/attachments/get/page/{$page->id}"),
+            'sortForPage' => $this->put("/attachments/sort/page/{$page->id}", ['order' => [$attachment->id]]),
+            'get' => $this->get("/attachments/{$attachment->id}"),
+            'delete' => $this->delete("/attachments/{$attachment->id}"),
+        ];
+
+        foreach ($actions as $action => $response) {
+            $this->assertEquals(404, $response->getStatusCode(), "Failed to assert 404 status for {$action}");
+        }
+    }
+
     public function test_file_access_with_open_query_param_provides_inline_response_with_correct_content_type()
     {
         $page = $this->entities->page();
@@ -324,7 +487,7 @@ class AttachmentTest extends TestCase
         $attachmentGet = $this->get($attachment->getUrl(true));
         // http-foundation/Response does some 'fixing' of responses to add charsets to text responses.
         $attachmentGet->assertHeader('Content-Type', 'text/plain; charset=utf-8');
-        $attachmentGet->assertHeader('Content-Disposition', 'inline; filename="upload_test_file.txt"');
+        $attachmentGet->assertHeader('Content-Disposition', 'inline; filename*=UTF-8\'\'upload_test_file.txt');
         $attachmentGet->assertHeader('X-Content-Type-Options', 'nosniff');
 
         $this->files->deleteAllAttachmentFiles();
@@ -340,7 +503,22 @@ class AttachmentTest extends TestCase
         $attachmentGet = $this->get($attachment->getUrl(true));
         // http-foundation/Response does some 'fixing' of responses to add charsets to text responses.
         $attachmentGet->assertHeader('Content-Type', 'text/plain; charset=utf-8');
-        $attachmentGet->assertHeader('Content-Disposition', 'inline; filename="test_file.html"');
+        $attachmentGet->assertHeader('Content-Disposition', 'inline; filename*=UTF-8\'\'test_file.html');
+
+        $this->files->deleteAllAttachmentFiles();
+    }
+
+    public function test_file_access_name_in_content_disposition_header_is_sanitized()
+    {
+        $page = $this->entities->page();
+        $this->asAdmin();
+
+        $attachment = $this->files->uploadAttachmentDataToPage($this, $page, 'test_file.html', '<html></html><p>testing</p>', 'text/html');
+        $attachment->name = "my\\_/super\n_fu\$n_\tfile";
+        $attachment->save();
+
+        $attachmentGet = $this->get($attachment->getUrl(true));
+        $attachmentGet->assertHeader('Content-Disposition', 'inline; filename*=UTF-8\'\'my_super_fun_file.html');
 
         $this->files->deleteAllAttachmentFiles();
     }

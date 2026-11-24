@@ -8,6 +8,7 @@ return [
 
     'failed' => 'यी प्रमाणिकरण जानकारी हाम्रो अभिलेखसँग मेल खाँदैन।',
     'throttle' => 'लगइन प्रयासहरूको संख्या धेरै भएको छ। कृपया :seconds सेकेन्ड पछि पुनः प्रयास गर्नुहोस्।',
+    'mfa_throttle' => 'Too many multi-factor verification attempts. Please try again in :seconds seconds.',
 
     // Login & Register
     'sign_up' => 'साइन अप गर्नुहोस्',
@@ -20,6 +21,9 @@ return [
     'username' => 'प्रयोगकर्ता नाम',
     'email' => 'ईमेल',
     'password' => 'पासवर्ड',
+    'password_new' => 'New Password',
+    'password_new_confirm' => 'Confirm New Password',
+    'password_current' => 'Confirm Current Password',
     'password_confirm' => 'पासवर्ड पक्का गर्नुहोस्',
     'password_hint' => 'कम्तिमा 8 अङ्कको हुनुपर्छ',
     'forgot_password' => 'पासवर्ड भुल्नुभयो?',

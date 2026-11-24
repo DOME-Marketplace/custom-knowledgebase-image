@@ -8,6 +8,7 @@ return [
 
     'failed' => 'প্রদত্ত তথ্যনিরূপিত কোন রেকর্ড পাওয়া যায়নি।',
     'throttle' => 'লগইন প্রচেষ্টার সীমা অতিক্রান্ত। দয়া করে :seconds সেকেন্ড পর আবার চেষ্টা করুন।',
+    'mfa_throttle' => 'Too many multi-factor verification attempts. Please try again in :seconds seconds.',
 
     // Login & Register
     'sign_up' => 'নিবন্ধিত হোন',
@@ -20,6 +21,9 @@ return [
     'username' => 'ব্যবহারকারী',
     'email' => 'ই-মেইল',
     'password' => 'পাসওয়ার্ড',
+    'password_new' => 'New Password',
+    'password_new_confirm' => 'Confirm New Password',
+    'password_current' => 'Confirm Current Password',
     'password_confirm' => 'পাসওয়ার্ডের পুনরাবৃত্তি',
     'password_hint' => 'ন্যূনতম ৮ অক্ষরের হতে হবে',
     'forgot_password' => 'পাসওয়ার্ড ভুলে গেছেন?',

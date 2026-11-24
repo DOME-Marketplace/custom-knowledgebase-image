@@ -6,6 +6,7 @@ use BookStack\Facades\Theme;
 use BookStack\Permissions\Permission;
 use BookStack\Permissions\PermissionApplicator;
 use BookStack\Settings\SettingService;
+use BookStack\Users\Models\OwnableInterface;
 use BookStack\Users\Models\User;
 
 /**
@@ -40,7 +41,7 @@ function user(): User
  * Check if the current user has a permission. If an ownable element
  * is passed in the jointPermissions are checked against that particular item.
  */
-function userCan(string|Permission $permission, ?Model $ownable = null): bool
+function userCan(string|Permission $permission, (Model&OwnableInterface)|null $ownable = null): bool
 {
     if (is_null($ownable)) {
         return user()->can($permission);
@@ -81,8 +82,7 @@ function setting(?string $key = null, mixed $default = null): mixed
 
 /**
  * Get a path to a theme resource.
- * Returns null if a theme is not configured and
- * therefore a full path is not available for use.
+ * Returns null if a theme is not configured, and therefore a full path is not available for use.
  */
 function theme_path(string $path = ''): ?string
 {

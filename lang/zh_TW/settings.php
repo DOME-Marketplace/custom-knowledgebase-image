@@ -104,7 +104,7 @@ return [
     'sort_rule_op_chapters_first' => '第一章',
     'sort_rule_op_chapters_last' => '最後一章',
     'sorting_page_limits' => '每頁顯示限制',
-    'sorting_page_limits_desc' => '設定系統內各類清單每頁顯示的項目數量。通常較低的數量能提升效能表現，而較高的數量則可避免使用者需點擊翻閱多頁。建議採用 3 的整數倍數（如 18、24、30 等）。',
+    'sorting_page_limits_desc' => '設定系統內各清單每頁顯示的項目數量。通常項目數量較少時效能較佳，而數量較多則可避免使用者需點擊多頁瀏覽。建議採用 6 的倍數。',
 
     // Maintenance settings
     'maint' => '維護',
@@ -207,7 +207,9 @@ return [
     'role_asset_users_note' => '這些權限在技術上亦將提供系統內使用者的能見度及搜尋功能。',
     'role_all' => '全部',
     'role_own' => '擁有',
+    'role_permission_aria' => ':action :resource: :value',
     'role_controlled_by_asset' => '依據隸屬的資源來決定',
+    'role_controlled_by_page_delete' => '受頁面刪除權限控制',
     'role_save' => '儲存角色',
     'role_users' => '屬於此角色的使用者',
     'role_users_none' => '目前沒有使用者被分配到此角色',
@@ -264,6 +266,9 @@ return [
     'users_mfa_desc' => '設定多重身份驗證為您的帳戶多增加了一道防線',
     'users_mfa_x_methods' => ':count 個措施已配置|:count 個措施已配置',
     'users_mfa_configure' => '方式設置',
+    'users_mfa_reset' => '重設多要素驗證方式',
+    'users_mfa_reset_desc' => '此操作將重設並清除該使用者所有已設定的多要素驗證方法。若其任何角色要求使用多要素驗證，系統將在下次登入時提示其設定新的驗證方法。',
+    'users_mfa_reset_confirm' => '您確定要重設此使用者的多要素驗證嗎？',
 
     // API Tokens
     'user_api_token_create' => '建立 API 權杖',
@@ -363,7 +368,9 @@ return [
         'ru' => 'Русский',
         'sk' => 'Slovensky',
         'sl' => 'Slovenščina',
+        'sr' => 'Српски',
         'sv' => 'Svenska',
+        'th' => '泰語',
         'tr' => 'Türkçe',
         'uk' => 'Українська',
         'uz' => 'O‘zbekcha',

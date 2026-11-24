@@ -51,6 +51,11 @@ class EntityHtmlDescription
             return $html;
         }
 
+        $isEmpty = empty(trim(strip_tags($html)));
+        if ($isEmpty) {
+            return '<p></p>';
+        }
+
         $filter = new HtmlContentFilter(new HtmlContentFilterConfig());
         return $filter->filterString($html);
     }

@@ -13,9 +13,12 @@ use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Env;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Testing\Assert as PHPUnit;
 use Illuminate\Testing\Constraints\HasInDatabase;
+use Mockery;
+use Mockery\MockInterface;
 use Monolog\Handler\TestHandler;
 use Monolog\Logger;
 use Ssddanbrown\AssertHtml\TestsHtml;
@@ -106,6 +109,19 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
+     * Creates a partial mock of the given service class from a default
+     * container resolved instance. Compared to the default $this->partialMock function,
+     * this resolves mock of a service with its dependencies resolved from the container.
+     */
+    protected function partialMockService(string $service): MockInterface
+    {
+        $realService = app($service);
+        $serviceMock = Mockery::mock($realService)->makePartial();
+        $this->instance($service, $serviceMock);
+        return $serviceMock;
+    }
+
+    /**
      * Mock the http client used in BookStack http calls.
      */
     protected function mockHttpClient(array $responses = []): HttpClientHistory
@@ -155,6 +171,23 @@ abstract class TestCase extends BaseTestCase
                 $_SERVER[$key] = $value;
             }
         }
+    }
+
+    protected function usingThemeFolder(callable $callback): void
+    {
+        // Create a folder and configure a theme
+        $themeFolderName = 'testing_theme_' . str_shuffle(rtrim(base64_encode(time()), '='));
+        config()->set('view.theme', $themeFolderName);
+        $themeFolderPath = theme_path('');
+
+        // Create a theme folder and clean it up on application tear-down
+        File::makeDirectory($themeFolderPath);
+        $this->beforeApplicationDestroyed(fn() => File::deleteDirectory($themeFolderPath));
+
+        // Run provided callback with the theme env option set
+        $this->runWithEnv(['APP_THEME' => $themeFolderName], function () use ($callback, $themeFolderName) {
+            call_user_func($callback, $themeFolderName);
+        });
     }
 
     /**

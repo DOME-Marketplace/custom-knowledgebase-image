@@ -3,7 +3,6 @@
 namespace BookStack\Entities\Controllers;
 
 use BookStack\Activity\Models\View;
-use BookStack\Activity\Tools\UserEntityWatchOptions;
 use BookStack\Entities\Models\Book;
 use BookStack\Entities\Queries\ChapterQueries;
 use BookStack\Entities\Queries\EntityQueries;
@@ -18,7 +17,6 @@ use BookStack\Exceptions\NotifyException;
 use BookStack\Exceptions\PermissionsException;
 use BookStack\Http\Controller;
 use BookStack\Permissions\Permission;
-use BookStack\References\ReferenceFetcher;
 use BookStack\Util\DatabaseTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -30,7 +28,6 @@ class ChapterController extends Controller
         protected ChapterRepo $chapterRepo,
         protected ChapterQueries $queries,
         protected EntityQueries $entityQueries,
-        protected ReferenceFetcher $referenceFetcher,
     ) {
     }
 
@@ -87,10 +84,10 @@ class ChapterController extends Controller
             return redirect($chapter->getUrl());
         }
 
-        $sidebarTree = (new BookContents($chapter->book))->getTree();
         $pages = $this->entityQueries->pages->visibleForChapterList($chapter->id)->get();
 
-        $nextPreviousLocator = new NextPreviousContentLocator($chapter, $sidebarTree);
+        $bookTree = (new BookContents($chapter->book))->getTree();
+        $nextPreviousLocator = new NextPreviousContentLocator($chapter, $bookTree);
         View::incrementFor($chapter);
 
         $this->setPageTitle($chapter->getShortName());
@@ -99,12 +96,10 @@ class ChapterController extends Controller
             'book'           => $chapter->book,
             'chapter'        => $chapter,
             'current'        => $chapter,
-            'sidebarTree'    => $sidebarTree,
-            'watchOptions'   => new UserEntityWatchOptions(user(), $chapter),
             'pages'          => $pages,
             'next'           => $nextPreviousLocator->getNext(),
             'previous'       => $nextPreviousLocator->getPrevious(),
-            'referenceCount' => $this->referenceFetcher->getReferenceCountToEntity($chapter),
+            'bookTree'       => $bookTree,
         ]);
     }
 
@@ -203,7 +198,7 @@ class ChapterController extends Controller
         $this->checkOwnablePermission(Permission::ChapterUpdate, $chapter);
         $this->checkOwnablePermission(Permission::ChapterDelete, $chapter);
 
-        $entitySelection = $request->get('entity_selection', null);
+        $entitySelection = $request->input('entity_selection', null);
         if ($entitySelection === null || $entitySelection === '') {
             return redirect($chapter->getUrl());
         }
@@ -248,7 +243,7 @@ class ChapterController extends Controller
     {
         $chapter = $this->queries->findVisibleBySlugsOrFail($bookSlug, $chapterSlug);
 
-        $entitySelection = $request->get('entity_selection') ?: null;
+        $entitySelection = $request->input('entity_selection') ?: null;
         $newParentBook = $entitySelection ? $this->entityQueries->findVisibleByStringIdentifier($entitySelection) : $chapter->getParent();
 
         if (!$newParentBook instanceof Book) {
@@ -259,7 +254,7 @@ class ChapterController extends Controller
 
         $this->checkOwnablePermission(Permission::ChapterCreate, $newParentBook);
 
-        $newName = $request->get('name') ?: $chapter->name;
+        $newName = $request->input('name') ?: $chapter->name;
         $chapterCopy = $cloner->cloneChapter($chapter, $newParentBook, $newName);
         $this->showSuccessNotification(trans('entities.chapters_copy_success'));
 

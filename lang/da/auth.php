@@ -8,6 +8,7 @@ return [
 
     'failed' => 'De indtastede brugeroplysninger stemmer ikke overens med vores registreringer.',
     'throttle' => 'For mange mislykkede loginforsøg. Prøv igen om :seconds sekunder.',
+    'mfa_throttle' => 'For mange mislykkede loginforsøg. Prøv igen om :seconds sekunder.',
 
     // Login & Register
     'sign_up' => 'Registrer',
@@ -20,6 +21,9 @@ return [
     'username' => 'Brugernavn',
     'email' => 'E-mail',
     'password' => 'Adgangskode',
+    'password_new' => 'New Password',
+    'password_new_confirm' => 'Confirm New Password',
+    'password_current' => 'Confirm Current Password',
     'password_confirm' => 'Bekræft adgangskode',
     'password_hint' => 'Skal være på mindst 8 karakterer',
     'forgot_password' => 'Glemt Adgangskode?',

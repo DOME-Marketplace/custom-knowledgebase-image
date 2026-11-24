@@ -7,7 +7,6 @@ use BookStack\Entities\Models\Book;
 use BookStack\Entities\Models\Bookshelf;
 use BookStack\Entities\Models\Entity;
 use BookStack\Facades\Activity;
-use BookStack\Permissions\Models\EntityPermission;
 use BookStack\Permissions\Permission;
 use BookStack\Users\Models\Role;
 use BookStack\Users\Models\User;
@@ -20,8 +19,8 @@ class PermissionsUpdater
      */
     public function updateFromPermissionsForm(Entity $entity, Request $request): void
     {
-        $permissions = $request->get('permissions', null);
-        $ownerId = $request->get('owned_by', null);
+        $permissions = $request->input('permissions', null);
+        $ownerId = $request->input('owned_by', null);
 
         $entity->permissions()->delete();
 
@@ -47,7 +46,7 @@ class PermissionsUpdater
     {
         if (isset($data['role_permissions'])) {
             $entity->permissions()->where('role_id', '!=', 0)->delete();
-            $rolePermissionData = $this->formatPermissionsFromApiRequestToEntityPermissions($data['role_permissions'] ?? [], false);
+            $rolePermissionData = $this->formatPermissionsFromApiRequestToEntityPermissions($data['role_permissions'], false);
             $entity->permissions()->createMany($rolePermissionData);
         }
 

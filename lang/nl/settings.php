@@ -104,7 +104,7 @@ return [
     'sort_rule_op_chapters_first' => 'Hoofdstukken Eerst',
     'sort_rule_op_chapters_last' => 'Hoofdstukken Laatst',
     'sorting_page_limits' => 'Weergavelimiet Per Pagina',
-    'sorting_page_limits_desc' => 'Stel in hoeveel items er op een pagina worden laten zien in de verschillende lijstweergaves. Een lager aantal verbeterd de snelheid, een hoger aantal verminderd het doorklikken door pagina\'s. Een even veelvoud van 3 (18, 24, 30, etc...) wordt aanbevolen.',
+    'sorting_page_limits_desc' => 'Stel in hoeveel items er op een pagina worden laten zien in de verschillende lijstweergaves. Een lager aantal verbeterd de snelheid, een hoger aantal verminderd het doorklikken door pagina\'s. Het wordt aanbevolen om een meervoud van 6 te gebruiken.',
 
     // Maintenance settings
     'maint' => 'Onderhoud',
@@ -206,7 +206,9 @@ return [
     'role_asset_users_note' => 'Deze machtigingen geven technisch gezien toegang tot het weergeven van gebruikers binnen het systeem.',
     'role_all' => 'Alles',
     'role_own' => 'Eigen',
+    'role_permission_aria' => ':action :resource: :value',
     'role_controlled_by_asset' => 'Gecontroleerd door de asset waar deze is geüpload',
+    'role_controlled_by_page_delete' => 'Ingesteld volgens pagina verwijder machtigingen',
     'role_save' => 'Rol Opslaan',
     'role_users' => 'Gebruikers in deze rol',
     'role_users_none' => 'Geen enkele gebruiker heeft deze rol',
@@ -263,6 +265,9 @@ return [
     'users_mfa_desc' => 'Stel meervoudige verificatie in als extra beveiligingslaag voor je gebruikersaccount.',
     'users_mfa_x_methods' => ':count methode geconfigureerd|:count methoden geconfigureerd',
     'users_mfa_configure' => 'Configureer methoden',
+    'users_mfa_reset' => 'Herstel Meervoudige Verificatie Methodes',
+    'users_mfa_reset_desc' => 'Dit zal alle methodes voor meervoudige verificatie van deze gebruiker wissen. Als meervoudige verificatie vereist is vanwege een van hun rollen, worden ze bij hun volgende inlogpoging gevraagd om nieuwe methodes te configureren.',
+    'users_mfa_reset_confirm' => 'Weet je zeker dat je de meervoudige verificatie van deze gebruiker wilt herstellen?',
 
     // API Tokens
     'user_api_token_create' => 'API-token aanmaken',
@@ -362,7 +367,9 @@ return [
         'ru' => 'Русский (Russisch)',
         'sk' => 'Slovensky (Slowaaks)',
         'sl' => 'Slovenščina (Sloveens)',
+        'sr' => 'Српски',
         'sv' => 'Svenska (Zweeds)',
+        'th' => 'ภาษาไทย',
         'tr' => 'Türkçe (Turks)',
         'uk' => 'Українська (Oekraïens)',
         'uz' => 'Oezbeeks',

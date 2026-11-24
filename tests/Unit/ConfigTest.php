@@ -2,6 +2,8 @@
 
 namespace Tests\Unit;
 
+use Exception;
+use Illuminate\Encryption\MissingAppKeyException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport;
@@ -122,6 +124,27 @@ class ConfigTest extends TestCase
         });
     }
 
+    public function test_app_url_changes_smtp_ehlo_host_on_mailer()
+    {
+        $getLocalDomain = function (): string {
+            /** @var EsmtpTransport $transport */
+            $transport = Mail::mailer('smtp')->getSymfonyTransport();
+            return $transport->getLocalDomain();
+        };
+
+        $this->runWithEnv(['APP_URL' => ''], function () use ($getLocalDomain) {
+            $this->assertEquals('[127.0.0.1]', $getLocalDomain());
+        });
+
+        $this->runWithEnv(['APP_URL' => 'https://example.com/cats/dogs'], function () use ($getLocalDomain) {
+            $this->assertEquals('example.com', $getLocalDomain());
+        });
+
+        $this->runWithEnv(['APP_URL' => 'http://beans.cat.example.com'], function () use ($getLocalDomain) {
+            $this->assertEquals('beans.cat.example.com', $getLocalDomain());
+        });
+    }
+
     public function test_non_null_mail_encryption_options_enforce_smtp_scheme()
     {
         $this->checkEnvConfigResult('MAIL_ENCRYPTION', 'tls', 'mail.mailers.smtp.require_tls', true);
@@ -191,8 +214,22 @@ class ConfigTest extends TestCase
         });
     }
 
+    public function test_app_errors_if_no_app_key_set()
+    {
+        $this->runWithEnv(['APP_KEY' => ''], function () {
+            $error = null;
+            try {
+                $this->get('/');
+            } catch (Exception $e) {
+                $error = $e;
+            }
+
+            $this->assertInstanceOf(MissingAppKeyException::class, $error);
+        });
+    }
+
     /**
-     * Set an environment variable of the given name and value
+     * Set an environment variable of the given name and value,
      * then check the given config key to see if it matches the given result.
      * Providing a null $envVal clears the variable.
      */

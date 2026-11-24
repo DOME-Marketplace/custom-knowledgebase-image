@@ -464,6 +464,14 @@ HTML;
             '<div style="background:#FF0000;left:0;color:#00FFEE;">Hello!</div>' => '<div style="background:#FF0000;color:#00FFEE;">Hello!</div>',
             '<div style="color:#00FFEE;">Hello!<style>testinghello!</style></div>' => '<div style="color:#00FFEE;">Hello!</div>',
             '<div drawio-diagram="5332" another-attr="cat">Hello!</div>' => '<div drawio-diagram="5332">Hello!</div>',
+            '<iframe src="file://link/to/file" id="bkmrk-file-iframe"></iframe>' => '<iframe id="bkmrk-file-iframe"></iframe>',
+            '<embed src="file://link/to/file" id="bkmrk-file-embed"></embed>' => '<embed id="bkmrk-file-embed">',
+            '<object data="file://link/to/file" id="bkmrk-file-object"></object>' => '<object id="bkmrk-file-object">',
+            '<div id="bkmrk-file-img"><img src="file://link/to/file" alt="My local image"></div>' => '<div id="bkmrk-file-img"></div>',
+            '<div id="bkmrk-file-img"><img srcset="file://link/to/file" alt="My local image"></div>' => '<div id="bkmrk-file-img"></div>',
+            '<div id="bkmrk-file-img"><img src="http://example.com" srcset="file://link/to/file  2x" alt="My local image"></div>' => '<div id="bkmrk-file-img"><img src="http://example.com" alt="My local image"></div>',
+            '<div id="bkmrk-file-img"><picture><source srcset="file://link/to/file"/><img src="http://example.com" alt="cat"/></picture></div>' => '<div id="bkmrk-file-img"><picture><source><img src="http://example.com" alt="cat"></picture></div>',
+            '<div id="bkmrk-link"><link rel="preload" as="image" imagesizes="50vw" imagesrcset="file://cat.com, bg-wide.png 800w" /></div>' => '<div id="bkmrk-link"></div>',
         ];
 
         config()->set('app.content_filtering', 'a');
@@ -476,6 +484,36 @@ HTML;
             $resp = $this->get($page->getUrl());
 
             $resp->assertSee($expected, false);
+            $resp->assertDontSee($input, false);
+        }
+    }
+
+    public function test_media_protocol_relative_urls_are_given_scheme_depending_on_app_url()
+    {
+        $testCasesExpectedByInput = [
+            '<div id="bkmrk-file-img"><img src="//link/to/file" alt="My local image"></div>' => '<div id="bkmrk-file-img"><img src="SCHEME://link/to/file" alt="My local image"></div>',
+            '<iframe src="//link/to/file" id="bkmrk-file-iframe"></iframe>' => '<iframe src="SCHEME://link/to/file" id="bkmrk-file-iframe"></iframe>',
+            '<embed src="//link/to/file" id="bkmrk-file-embed">' => '<embed src="SCHEME://link/to/file" id="bkmrk-file-embed">',
+            '<object data="//link/to/file" id="bkmrk-file-object"></object>' => '<object data="SCHEME://link/to/file" id="bkmrk-file-object"></object>',
+            '<div id="bkmrk-file-img"><img srcset="//link/to/file 2x, //link-to-another 4x" src="//link/to/a/file" alt="My local image"></div>' => '<div id="bkmrk-file-img"><img srcset="SCHEME://link/to/file 2x, SCHEME://link-to-another 4x" src="SCHEME://link/to/a/file" alt="My local image"></div>',
+        ];
+
+        $baseUrls = ['https://example.com' => 'https', 'http://example.com' => 'http'];
+        foreach ($baseUrls as $baseUrl => $expectedScheme) {
+            $this->runWithEnv(['APP_URL' => $baseUrl], function () use ($expectedScheme, $baseUrl, $testCasesExpectedByInput) {
+                config()->set('app.content_filtering', 'a');
+                $page = $this->entities->page();
+                $this->asEditor();
+
+                foreach ($testCasesExpectedByInput as $input => $expected) {
+                    $page->html = $input;
+                    $page->save();
+                    $resp = $this->get($page->getUrl());
+
+                    $resp->assertSee(str_replace('SCHEME', $expectedScheme, $expected), false);
+                    $resp->assertDontSee($input, false);
+                }
+            });
         }
     }
 
@@ -484,7 +522,11 @@ HTML;
         $testCasesExpectedByInput = [
             '<p><a href="https://example.com" target="_blank">New tab linkydoodle</a></p>',
             '<p><a href="https://example.com/user/1" data-mention-user-id="5">@mentionusertext</a></p>',
+            '<p><a href="file://link/to/file">Link to file</a></p>',
+            '<p><a href="sftp://example.com/a/link/to/file">Link to file</a></p>',
+            '<p><a href="#hello-section">Link to another section</a></p>',
             '<details><summary>Hello</summary><p>Mydetailshere</p></details>',
+            '<table><tr><th align="right">Hello</th></tr><tr><td align="center">Hello</td></tr></table>',
         ];
 
         config()->set('app.content_filtering', 'a');

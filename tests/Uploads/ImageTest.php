@@ -36,6 +36,45 @@ class ImageTest extends TestCase
         ]);
     }
 
+    public function test_image_upload_with_page_reference_requires_visibility_and_update_permissions_of_target_page()
+    {
+        $page = $this->entities->page();
+        $editor = $this->users->editor();
+
+        $this->permissions->disableEntityInheritedPermissions($page);
+        $this->actingAs($editor);
+
+        $resp = $this->files->uploadGalleryImage($this, 'test-image.png', $page->id);
+        $resp->assertStatus(404);
+
+        $this->permissions->setEntityPermissionsForRole($page, ['view'], $editor->roles()->first());
+
+        $resp = $this->files->uploadGalleryImage($this, 'test-image.png', $page->id);
+        $this->assertPermissionError($resp);
+
+        $this->permissions->setEntityPermissionsForRole($page, ['view', 'update'], $editor->roles()->first());
+
+        $resp = $this->files->uploadGalleryImage($this, 'test-image.png', $page->id);
+        $resp->assertStatus(200);
+
+        $this->files->deleteAtRelativePath($resp->json('path'));
+    }
+
+    public function test_image_upload_with_page_reference_requires_page_to_exist()
+    {
+        $page = $this->entities->page();
+        $this->entities->destroy($page);
+
+        $editor = $this->users->editor();
+        $this->actingAs($editor);
+
+        $resp = $this->files->uploadGalleryImage($this, 'test-image.png', $page->id);
+        $resp->assertStatus(404);
+
+        $resp = $this->files->uploadGalleryImage($this, 'test-image.png', 0);
+        $resp->assertStatus(404);
+    }
+
     public function test_image_display_thumbnail_generation_does_not_increase_image_size()
     {
         $page = $this->entities->page();
@@ -75,7 +114,7 @@ class ImageTest extends TestCase
 
     public function test_image_display_thumbnail_generation_for_animated_avif_images_uses_original_file()
     {
-        if (! function_exists('imageavif')) {
+        if ((gd_info()['AVIF Support'] ?? false) !== true) {
             $this->markTestSkipped('imageavif() is not available');
         }
 
@@ -109,6 +148,38 @@ class ImageTest extends TestCase
             'type' => 'gallery',
             'name' => $newName,
         ]);
+    }
+
+    public function test_image_edit_fails_to_return_if_page_is_in_recycle_bin()
+    {
+        $this->asEditor();
+        $page = $this->entities->page();
+
+        $this->files->uploadGalleryImageToPage($this, $page);
+        $image = Image::query()->where('type', '=', 'gallery')->where('uploaded_to', '=', $page->id)->first();
+
+        $this->entities->sendToRecycleBin($page);
+
+        $resp = $this->get("/images/edit/{$image->id}");
+        $resp->assertStatus(404);
+    }
+
+    public function test_image_edit_fails_if_page_is_another_users_initial_draft()
+    {
+        $this->asEditor();
+        $admin = $this->users->admin();
+        $page = $this->entities->page();
+
+        $this->files->uploadGalleryImageToPage($this, $page);
+        $image = Image::query()->where('type', '=', 'gallery')->where('uploaded_to', '=', $page->id)->first();
+
+        $page->draft = true;
+        $page->created_by = $admin->id;
+        $page->owned_by = $admin->id;
+        $page->save();
+
+        $resp = $this->get("/images/edit/{$image->id}");
+        $resp->assertStatus(404);
     }
 
     public function test_image_file_update()
@@ -182,6 +253,74 @@ class ImageTest extends TestCase
             ]);
 
         $this->files->deleteAtRelativePath($relPath);
+    }
+
+    public function test_image_file_update_fails_if_page_is_in_recycle_bin()
+    {
+        $this->asEditor();
+        $page = $this->entities->page();
+
+        $this->files->uploadGalleryImageToPage($this, $page);
+        $image = Image::query()->where('type', '=', 'gallery')->where('uploaded_to', '=', $page->id)->first();
+
+        $this->entities->sendToRecycleBin($page);
+
+        $newUpload = $this->files->uploadedImage('updated-image.jpg', 'compressed.png');
+        $resp = $this->call('PUT', "/images/{$image->id}/file", [], [], ['file' => $newUpload]);
+
+        $resp->assertStatus(404);
+    }
+
+    public function test_image_file_update_fails_if_page_is_another_users_initial_draft()
+    {
+        $this->asEditor();
+        $admin = $this->users->admin();
+        $page = $this->entities->page();
+
+        $this->files->uploadGalleryImageToPage($this, $page);
+        $image = Image::query()->where('type', '=', 'gallery')->where('uploaded_to', '=', $page->id)->first();
+
+        $page->draft = true;
+        $page->created_by = $admin->id;
+        $page->owned_by = $admin->id;
+        $page->save();
+
+        $newUpload = $this->files->uploadedImage('updated-image.jpg', 'compressed.png');
+        $resp = $this->call('PUT', "/images/{$image->id}/file", [], [], ['file' => $newUpload]);
+
+        $resp->assertStatus(404);
+    }
+
+    public function test_image_update_fails_if_page_is_in_recycle_bin()
+    {
+        $this->asEditor();
+        $page = $this->entities->page();
+
+        $this->files->uploadGalleryImageToPage($this, $page);
+        $image = Image::query()->where('type', '=', 'gallery')->where('uploaded_to', '=', $page->id)->first();
+
+        $this->entities->sendToRecycleBin($page);
+
+        $resp = $this->put("/images/{$image->id}", ['name' => 'Updated image name']);
+        $resp->assertStatus(404);
+    }
+
+    public function test_image_update_fails_if_page_is_another_users_initial_draft()
+    {
+        $this->asEditor();
+        $admin = $this->users->admin();
+        $page = $this->entities->page();
+
+        $this->files->uploadGalleryImageToPage($this, $page);
+        $image = Image::query()->where('type', '=', 'gallery')->where('uploaded_to', '=', $page->id)->first();
+
+        $page->draft = true;
+        $page->created_by = $admin->id;
+        $page->owned_by = $admin->id;
+        $page->save();
+
+        $resp = $this->put("/images/{$image->id}", ['name' => 'Updated image name']);
+        $resp->assertStatus(404);
     }
 
     public function test_gallery_get_list_format()
@@ -624,6 +763,38 @@ class ImageTest extends TestCase
         $this->assertFalse(file_exists(public_path($relPath)), 'Uploaded image has not been deleted as expected');
     }
 
+    public function test_image_delete_fails_if_page_is_in_recycle_bin()
+    {
+        $this->asEditor();
+        $page = $this->entities->page();
+
+        $this->files->uploadGalleryImageToPage($this, $page);
+        $image = Image::query()->where('type', '=', 'gallery')->where('uploaded_to', '=', $page->id)->first();
+
+        $this->entities->sendToRecycleBin($page);
+
+        $resp = $this->delete("/images/{$image->id}");
+        $resp->assertStatus(404);
+    }
+
+    public function test_image_delete_fails_if_page_is_another_users_initial_draft()
+    {
+        $this->asEditor();
+        $admin = $this->users->admin();
+        $page = $this->entities->page();
+
+        $this->files->uploadGalleryImageToPage($this, $page);
+        $image = Image::query()->where('type', '=', 'gallery')->where('uploaded_to', '=', $page->id)->first();
+
+        $page->draft = true;
+        $page->created_by = $admin->id;
+        $page->owned_by = $admin->id;
+        $page->save();
+
+        $resp = $this->delete("/images/{$image->id}");
+        $resp->assertStatus(404);
+    }
+
     public function test_image_manager_delete_button_only_shows_with_permission()
     {
         $page = $this->entities->page();
@@ -780,7 +951,7 @@ class ImageTest extends TestCase
         $pageRepo->update($page, [
             'name'    => $page->name,
             'html'    => $page->html . "<img src=\"{$image->url}\">",
-            'summary' => '',
+            'changelog' => '',
         ]);
 
         // Ensure no images are reported as deletable
@@ -792,7 +963,7 @@ class ImageTest extends TestCase
         $pageRepo->update($page, [
             'name'    => $page->name,
             'html'    => '<p>Hello</p>',
-            'summary' => '',
+            'changelog' => '',
         ]);
 
         // Ensure revision images are picked up okay
