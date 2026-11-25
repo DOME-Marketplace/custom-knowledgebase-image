@@ -48,6 +48,7 @@ class OidcTest extends TestCase
             'oidc.remove_from_groups'     => false,
             'oidc.external_id_claim'      => 'sub',
             'oidc.end_session_endpoint'   => false,
+            'oidc.dome_role_sync.enabled' => false,
         ]);
     }
 
@@ -659,6 +660,197 @@ class OidcTest extends TestCase
         /** @var User $user */
         $user = User::query()->where('email', '=', 'benny@example.com')->first();
         $this->assertTrue($user->hasRole($roleA->id));
+    }
+
+    public function test_dome_role_sync_assigns_public_and_editor_to_matching_organization()
+    {
+        $editor = Role::factory()->create(['display_name' => 'DOME Editor']);
+        $this->enableDomeRoleSync($editor);
+
+        $response = $this->runLogin([
+            'power' => [$this->domeOrganizationPower()],
+        ]);
+
+        $response->assertRedirect('/');
+        $user = User::query()->where('external_auth_id', '=', 'abc1234def')->firstOrFail();
+        $this->assertTrue($user->hasRole($editor->id));
+        $this->assertTrue($user->hasRole(Role::getSystemRole('public')->id));
+        $this->assertFalse($user->hasRole(Role::getSystemRole('admin')->id));
+    }
+
+    public function test_dome_role_sync_removes_editor_for_other_organizations_and_preserves_other_roles()
+    {
+        $editor = Role::factory()->create(['display_name' => 'DOME Editor']);
+        $other = Role::factory()->create(['display_name' => 'Other Role']);
+        $admin = Role::getSystemRole('admin');
+        $user = $this->users->newUser([
+            'external_auth_id' => 'abc1234def',
+            'email' => 'bscott@example.com',
+        ]);
+        $user->roles()->attach([$editor->id, $other->id, $admin->id]);
+        $this->enableDomeRoleSync($editor);
+
+        $response = $this->runLogin([
+            'power' => [
+                ['type' => 'domain', 'domain' => 'DOME', 'function' => 'Onboarding', 'action' => ['Execute']],
+                ['type' => 'organization', 'domain' => 'OTHER', 'function' => 'Onboarding', 'action' => 'Execute'],
+            ],
+        ]);
+
+        $response->assertRedirect('/');
+        $user->refresh();
+        $this->assertFalse($user->hasRole($editor->id));
+        $this->assertTrue($user->hasRole(Role::getSystemRole('public')->id));
+        $this->assertTrue($user->hasRole($admin->id));
+        $this->assertTrue($user->hasRole($other->id));
+    }
+
+    public function test_dome_role_sync_assigns_only_public_to_new_user_with_an_empty_power_list()
+    {
+        $editor = Role::factory()->create(['display_name' => 'DOME Editor']);
+        $this->enableDomeRoleSync($editor);
+        $this->setSettings(['registration-role' => '0']);
+
+        $response = $this->runLogin(['power' => []]);
+
+        $response->assertRedirect('/');
+        $user = User::query()->where('external_auth_id', '=', 'abc1234def')->firstOrFail();
+        $this->assertEquals([Role::getSystemRole('public')->id], $user->roles()->pluck('roles.id')->all());
+    }
+
+    public function test_dome_role_sync_matching_member_preserves_manually_assigned_admin()
+    {
+        $editor = Role::factory()->create(['display_name' => 'DOME Editor']);
+        $admin = Role::getSystemRole('admin');
+        $user = $this->users->newUser([
+            'external_auth_id' => 'abc1234def',
+            'email' => 'bscott@example.com',
+        ]);
+        $user->roles()->attach($admin->id);
+        $this->enableDomeRoleSync($editor);
+
+        $response = $this->runLogin(['power' => [$this->domeOrganizationPower()]]);
+
+        $response->assertRedirect('/');
+        $user->refresh();
+        $this->assertTrue($user->hasRole($admin->id));
+        $this->assertTrue($user->hasRole($editor->id));
+        $this->assertTrue($user->hasRole(Role::getSystemRole('public')->id));
+    }
+
+    public function test_dome_role_sync_rejects_missing_or_invalid_powers_without_changing_roles()
+    {
+        $editor = Role::factory()->create(['display_name' => 'DOME Editor']);
+        $admin = Role::getSystemRole('admin');
+        $user = $this->users->newUser([
+            'external_auth_id' => 'abc1234def',
+            'email' => 'bscott@example.com',
+        ]);
+        $user->roles()->attach([$admin->id, $editor->id]);
+        $this->enableDomeRoleSync($editor);
+
+        $invalidClaims = [
+            [[], 'a valid power list'],
+            [['power' => (object) []], 'a valid power list'],
+            [['power' => 'DOME'], 'a valid power list'],
+            [['power' => [['type' => 'organization']]], 'a valid type and domain for each power'],
+            [['power' => [$this->domeOrganizationPower(), 'invalid']], 'a valid type and domain for each power'],
+        ];
+        foreach ($invalidClaims as [$claims, $reason]) {
+            $response = $this->runLogin($claims);
+            $response->assertRedirect('/login');
+            $this->assertSessionError("DOME role sync requires {$reason} in the ID token.");
+            $this->assertFalse(auth()->check());
+            $this->assertEqualsCanonicalizing([$admin->id, $editor->id], $user->roles()->pluck('roles.id')->all());
+        }
+    }
+
+    public function test_dome_role_sync_rejects_admin_as_editor_role()
+    {
+        $this->enableDomeRoleSync(Role::getSystemRole('admin'));
+
+        $response = $this->runLogin(['power' => [$this->domeOrganizationPower()]]);
+
+        $response->assertRedirect('/login');
+        $this->assertSessionError('DOME role sync requires an existing non-system Editor role and the Public role.');
+        $this->assertDatabaseMissing('users', ['external_auth_id' => 'abc1234def']);
+    }
+
+    public function test_dome_role_sync_rejects_missing_or_unknown_editor_role()
+    {
+        config()->set([
+            'oidc.dome_role_sync.enabled' => true,
+        ]);
+
+        config()->set('oidc.dome_role_sync.editor_role_id', null);
+        $response = $this->runLogin(['power' => [$this->domeOrganizationPower()]]);
+        $response->assertRedirect('/login');
+        $this->assertSessionError('DOME role sync requires a valid Editor role ID.');
+
+        config()->set('oidc.dome_role_sync.editor_role_id', '99999999');
+        $response = $this->runLogin(['power' => [$this->domeOrganizationPower()]]);
+        $response->assertRedirect('/login');
+        $this->assertSessionError('DOME role sync requires an existing non-system Editor role and the Public role.');
+        $this->assertDatabaseMissing('users', ['external_auth_id' => 'abc1234def']);
+    }
+
+    public function test_dome_role_sync_rejects_simultaneous_oidc_group_sync()
+    {
+        $editor = Role::factory()->create(['display_name' => 'DOME Editor']);
+        $this->enableDomeRoleSync($editor);
+        config()->set('oidc.user_to_groups', true);
+
+        $response = $this->runLogin(['power' => [$this->domeOrganizationPower()]]);
+
+        $response->assertRedirect('/login');
+        $this->assertSessionError('DOME role sync cannot be combined with OIDC group sync.');
+        $this->assertDatabaseMissing('users', ['external_auth_id' => 'abc1234def']);
+    }
+
+    public function test_dome_role_sync_rejects_unrelated_default_registration_role()
+    {
+        $editor = Role::factory()->create(['display_name' => 'DOME Editor']);
+        $this->enableDomeRoleSync($editor);
+        $this->setSettings(['registration-role' => (string) Role::getSystemRole('admin')->id]);
+
+        $response = $this->runLogin(['power' => [$this->domeOrganizationPower()]]);
+
+        $response->assertRedirect('/login');
+        $this->assertSessionError('DOME role sync requires the default registration role to be Public or none.');
+        $this->assertDatabaseMissing('users', ['external_auth_id' => 'abc1234def']);
+    }
+
+    public function test_dome_role_sync_does_not_change_roles_if_id_token_validation_fails()
+    {
+        $editor = Role::factory()->create(['display_name' => 'DOME Editor']);
+        $user = $this->users->newUser([
+            'external_auth_id' => 'abc1234def',
+            'email' => 'bscott@example.com',
+        ]);
+        $user->roles()->attach($editor->id);
+        $this->enableDomeRoleSync($editor);
+
+        $response = $this->runLogin([
+            'iss' => 'https://unexpected.example.com',
+            'power' => [],
+        ]);
+
+        $response->assertRedirect('/login');
+        $this->assertSessionError('ID token validation failed with error: Missing or non-matching token issuer value');
+        $this->assertEquals([$editor->id], $user->roles()->pluck('roles.id')->all());
+    }
+
+    protected function enableDomeRoleSync(Role $editor): void
+    {
+        config()->set([
+            'oidc.dome_role_sync.enabled' => true,
+            'oidc.dome_role_sync.editor_role_id' => $editor->id,
+        ]);
+    }
+
+    protected function domeOrganizationPower(): array
+    {
+        return ['type' => 'organization', 'domain' => 'DOME', 'function' => 'Onboarding', 'action' => ['Execute']];
     }
 
     public function test_oidc_logout_form_active_when_oidc_active()

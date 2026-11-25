@@ -66,4 +66,10 @@ return [
     'groups_claim' => env('OIDC_GROUPS_CLAIM', 'groups'),
     // When syncing groups, remove any groups that no longer match. Otherwise, sync only adds new groups.
     'remove_from_groups' => env('OIDC_REMOVE_FROM_GROUPS', false),
+
+    // DOME-specific role sync (not compatible with OIDC group sync).
+    'dome_role_sync' => [
+        'enabled' => env('OIDC_DOME_ROLE_SYNC', false),
+        'editor_role_id' => env('OIDC_DOME_EDITOR_ROLE_ID', null),
+    ],
 ];

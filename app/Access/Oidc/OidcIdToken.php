@@ -5,6 +5,17 @@ namespace BookStack\Access\Oidc;
 class OidcIdToken extends OidcJwtWithClaims implements ProvidesClaims
 {
     /**
+     * Read a claim from the original payload, preserving JSON objects vs lists.
+     * Call only after validating the token.
+     */
+    public function getSignedClaim(string $claim): mixed
+    {
+        $payload = json_decode($this->base64UrlDecode($this->tokenParts[1] ?? ''));
+
+        return is_object($payload) ? ($payload->{$claim} ?? null) : null;
+    }
+
+    /**
      * Validate all possible parts of the id token.
      *
      * @throws OidcInvalidTokenException

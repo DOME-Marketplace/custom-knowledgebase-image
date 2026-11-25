@@ -16,6 +16,32 @@
 
 A platform for storing and organising information and documentation. Details for BookStack can be found on the official website at https://www.bookstackapp.com/.
 
+## DOME OIDC role sync
+
+The Docker image enables DOME role sync by default
+(`OIDC_DOME_ROLE_SYNC=true`, `OIDC_DOME_EDITOR_ROLE_ID=2`). Role ID `2` is the
+existing Editor role in SBX. Override the role ID if deploying to a database
+where Editor has a different ID. Outside this image, role sync stays disabled
+unless configured explicitly.
+
+The sync assigns Public to OIDC users and manages Editor based on the validated
+ID token's top-level `power` claim. Keep `OIDC_USER_TO_GROUPS=false`; the two sync
+methods cannot be enabled together. Set BookStack's default registration role to
+Public or none, so new users cannot receive an unrelated role before sync.
+
+Editor requires a single power with both `type: organization` and `domain: DOME`
+(exact, case-sensitive values). `function` and `action` do not affect the mapping.
+A valid list with no match (including an empty list) removes Editor.
+Public is added in either case. Admin and other roles are preserved, but the
+configured Editor role is managed exclusively by this sync, including assignments
+made manually. Missing or invalid configuration, a missing or non-list `power`
+claim, or an entry without a valid `type` and `domain` rejects the login before
+changing roles. The sync does not read `mandator`, `vc_json`, or UserInfo.
+Ensure the configured Editor and Public roles have only the intended
+permissions before enabling this feature. Public is also assigned to authenticated
+users and can grant them its configured permissions. Roles are updated on the next
+successful login, not in already active sessions.
+
 * [Installation Instructions](https://www.bookstackapp.com/docs/admin/installation)
 * [Documentation](https://www.bookstackapp.com/docs)
 * [Demo Instance](https://demo.bookstackapp.com)

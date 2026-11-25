@@ -30,7 +30,8 @@ class OidcService
         protected LoginService $loginService,
         protected HttpRequestService $http,
         protected GroupSyncService $groupService,
-        protected UserAvatars $userAvatars
+        protected UserAvatars $userAvatars,
+        protected DomeOrganizationRoleSync $domeRoleSync,
     ) {
     }
 
@@ -228,6 +229,7 @@ class OidcService
             throw new OidcException("ID token validation failed with error: {$exception->getMessage()}");
         }
 
+        $domeRoleAssignment = $this->domeRoleSync->prepare($idToken);
         $userDetails = $this->getUserDetailsFromToken($idToken, $accessToken, $settings);
         if (empty($userDetails->email)) {
             throw new OidcException(trans('errors.oidc_no_email_address'));
@@ -258,6 +260,10 @@ class OidcService
         if ($this->shouldSyncGroups()) {
             $detachExisting = $this->config()['remove_from_groups'];
             $this->groupService->syncUserWithFoundGroups($user, $userDetails->groups ?? [], $detachExisting);
+        }
+
+        if ($domeRoleAssignment !== null) {
+            $this->domeRoleSync->sync($user, $domeRoleAssignment);
         }
 
         $this->loginService->login($user, 'oidc');

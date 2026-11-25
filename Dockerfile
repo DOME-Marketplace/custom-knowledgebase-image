@@ -65,7 +65,9 @@ USER 33
 VOLUME ["/var/www/bookstack/public/uploads","/var/www/bookstack/storage/uploads"]
 
 ENV RUN_APACHE_USER=www-data \
-    RUN_APACHE_GROUP=www-data
+    RUN_APACHE_GROUP=www-data \
+    OIDC_DOME_ROLE_SYNC=true \
+    OIDC_DOME_EDITOR_ROLE_ID=2
 
 EXPOSE 8080
 
